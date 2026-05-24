@@ -39,5 +39,9 @@ SIGNING-KEY-INFO.txt
 .idea/
 .claude/
 
+# Release builds — large binaries, don't commit
+*.apk
+*.aab
+
 # Misc
 *.log

@@ -1,0 +1,104 @@
+{
+  "app": {
+    "name": "SAVITA",
+    "tagline": "Your AI Companion"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started",
+    "slides": [
+      { "title": "Instant Responses", "body": "She's always here. Real conversations, anytime you need them." },
+      { "title": "Voice Calls", "body": "Hear her voice. Feel the connection with live audio calls." },
+      { "title": "Deeply Personal", "body": "Tell her your interests. She remembers everything about you." },
+      { "title": "Premium Companions", "body": "Unlock exclusive characters crafted for a premium experience." }
+    ]
+  },
+  "language": {
+    "title": "Choose Language",
+    "subtitle": "Select your preferred language",
+    "continue": "Continue"
+  },
+  "character": {
+    "title": "Choose Your Companion",
+    "subtitle": "Tap a character to begin",
+    "free": "Free",
+    "premium": "Premium",
+    "locked": "Premium Only",
+    "continue": "Continue"
+  },
+  "name": {
+    "title": "What's her name?",
+    "subtitle": "You can use her real name or give her a new one",
+    "placeholder": "Enter a name",
+    "continue": "Continue",
+    "error": "Name must be at least 2 characters"
+  },
+  "hobbies": {
+    "title": "Her Hobbies",
+    "subtitle": "Select at least one",
+    "continue": "Continue",
+    "tags": ["Fitness", "Reading", "Gaming", "Cooking", "Traveling", "Music", "Art", "Sports", "Dancing", "Photography", "Yoga", "Movies"]
+  },
+  "interests": {
+    "title": "Her Interests",
+    "subtitle": "Select at least one",
+    "continue": "Continue",
+    "tags": ["Tech", "Anime", "Fashion", "Philosophy", "Pop Culture", "Movies", "Science", "History", "Food", "Nature", "Spirituality", "Business"]
+  },
+  "auth": {
+    "title": "Save Your Companion",
+    "subtitle": "Create an account to save your chat history and settings",
+    "google": "Continue with Google",
+    "apple": "Continue with Apple",
+    "guest": "Continue as Guest",
+    "note": "You can always link an account later"
+  },
+  "summary": {
+    "title": "Your Companion",
+    "name": "Name",
+    "hobbies": "Hobbies",
+    "interests": "Interests",
+    "startChat": "Start Chatting →"
+  },
+  "chat": {
+    "placeholder": "Message",
+    "typing": "is typing…",
+    "callButton": "Call",
+    "limitReached": "You've reached your free message limit",
+    "upgrade": "Upgrade to continue"
+  },
+  "call": {
+    "incoming": "Incoming Call",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "paywall": {
+    "title": "Go Premium",
+    "subtitle": "Unlimited chats, voice calls & more",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "bestValue": "Best Value",
+    "subscribe": "Subscribe Now",
+    "restore": "Restore Purchases",
+    "terms": "Terms & Privacy"
+  },
+  "dashboard": {
+    "title": "My Companions",
+    "noCompanions": "No companions yet",
+    "newGirlfriend": "+ Select New Girlfriend",
+    "logout": "Log Out",
+    "settings": "Settings",
+    "subscription": "Subscription",
+    "lastMessage": "Last message"
+  },
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Retry"
+  }
+}
