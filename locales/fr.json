@@ -1,0 +1,35 @@
+{
+  "app": { "name": "SAVITA", "tagline": "Votre IA Compagne" },
+  "onboarding": {
+    "skip": "Passer", "next": "Suivant", "getStarted": "Commencer",
+    "slides": [
+      { "title": "Réponses Instantanées", "body": "Elle est toujours là. De vraies conversations, quand tu en as besoin." },
+      { "title": "Appels Vocaux", "body": "Entends sa voix. Ressens la connexion avec des appels audio en direct." },
+      { "title": "Très Personnel", "body": "Parle-lui de tes intérêts. Elle se souvient de tout." },
+      { "title": "Compagnes Premium", "body": "Débloque des personnages exclusifs pour une expérience premium." }
+    ]
+  },
+  "language": { "title": "Choisir la langue", "subtitle": "Sélectionne ta langue préférée", "continue": "Continuer" },
+  "character": { "title": "Choisis ta Compagne", "subtitle": "Appuie sur un personnage pour commencer", "free": "Gratuit", "premium": "Premium", "locked": "Premium seulement", "continue": "Continuer" },
+  "name": {
+    "title": "Quel est son prénom ?",
+    "subtitle": "Utilise son vrai prénom ou donne-lui en un nouveau",
+    "placeholder": "Entrer un prénom",
+    "continue": "Continuer",
+    "error": "Le prénom doit comporter au moins 2 caractères"
+  },
+  "hobbies": {
+    "title": "Ses loisirs",
+    "subtitle": "Sélectionne au moins un",
+    "continue": "Continuer",
+    "tags": ["Fitness", "Lecture", "Gaming", "Cuisine", "Voyage", "Musique", "Art", "Sport", "Danse", "Photographie", "Yoga", "Cinéma"]
+  },
+  "interests": {
+    "title": "Ses intérêts",
+    "subtitle": "Sélectionne au moins un",
+    "continue": "Continuer",
+    "tags": ["Technologie", "Anime", "Mode", "Philosophie", "Culture Pop", "Cinéma", "Science", "Histoire", "Gastronomie", "Nature", "Spiritualité", "Business"]
+  },
+  "auth": { "title": "Sauvegarder la compagne", "subtitle": "Crée un compte pour sauvegarder ton historique de chat", "google": "Continuer avec Google", "apple": "Continuer avec Apple", "guest": "Continuer en tant qu'invité", "note": "Tu peux lier un compte plus tard" },
+  "common": { "back": "Retour", "cancel": "Annuler", "confirm": "Confirmer", "loading": "Chargement…", "error": "Une erreur s'est produite", "retry": "Réessayer" }
+}

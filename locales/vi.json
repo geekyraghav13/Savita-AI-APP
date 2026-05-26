@@ -1,0 +1,35 @@
+{
+  "app": { "name": "SAVITA", "tagline": "Người bạn AI của bạn" },
+  "onboarding": {
+    "skip": "Bỏ qua", "next": "Tiếp", "getStarted": "Bắt đầu",
+    "slides": [
+      { "title": "Phản Hồi Tức Thì", "body": "Cô ấy luôn ở đây. Trò chuyện thật sự, bất cứ lúc nào bạn cần." },
+      { "title": "Cuộc Gọi Thoại", "body": "Nghe giọng cô ấy. Cảm nhận kết nối qua cuộc gọi âm thanh trực tiếp." },
+      { "title": "Rất Cá Nhân", "body": "Chia sẻ sở thích của bạn. Cô ấy nhớ mọi thứ về bạn." },
+      { "title": "Bạn Đồng Hành Premium", "body": "Mở khóa nhân vật độc quyền cho trải nghiệm cao cấp." }
+    ]
+  },
+  "language": { "title": "Chọn Ngôn Ngữ", "subtitle": "Chọn ngôn ngữ ưa thích của bạn", "continue": "Tiếp tục" },
+  "character": { "title": "Chọn Bạn Đồng Hành", "subtitle": "Nhấn vào nhân vật để bắt đầu", "free": "Miễn phí", "premium": "Premium", "locked": "Chỉ Premium", "continue": "Tiếp tục" },
+  "name": {
+    "title": "Tên cô ấy là gì?",
+    "subtitle": "Dùng tên thật hoặc đặt tên mới cho cô ấy",
+    "placeholder": "Nhập tên",
+    "continue": "Tiếp tục",
+    "error": "Tên phải có ít nhất 2 ký tự"
+  },
+  "hobbies": {
+    "title": "Sở thích của cô ấy",
+    "subtitle": "Chọn ít nhất một",
+    "continue": "Tiếp tục",
+    "tags": ["Thể dục", "Đọc sách", "Chơi game", "Nấu ăn", "Du lịch", "Âm nhạc", "Nghệ thuật", "Thể thao", "Khiêu vũ", "Nhiếp ảnh", "Yoga", "Phim"]
+  },
+  "interests": {
+    "title": "Mối quan tâm của cô ấy",
+    "subtitle": "Chọn ít nhất một",
+    "continue": "Tiếp tục",
+    "tags": ["Công nghệ", "Anime", "Thời trang", "Triết học", "Văn hóa đại chúng", "Phim", "Khoa học", "Lịch sử", "Ẩm thực", "Thiên nhiên", "Tâm linh", "Kinh doanh"]
+  },
+  "auth": { "title": "Lưu Bạn Đồng Hành", "subtitle": "Tạo tài khoản để lưu lịch sử trò chuyện", "google": "Tiếp tục với Google", "apple": "Tiếp tục với Apple", "guest": "Tiếp tục với tư cách khách", "note": "Bạn có thể liên kết tài khoản sau" },
+  "common": { "back": "Quay lại", "cancel": "Hủy", "confirm": "Xác nhận", "loading": "Đang tải…", "error": "Đã có lỗi xảy ra", "retry": "Thử lại" }
+}

@@ -1,0 +1,35 @@
+{
+  "app": { "name": "SAVITA", "tagline": "Yapay Zeka Arkadaşın" },
+  "onboarding": {
+    "skip": "Atla", "next": "İleri", "getStarted": "Başla",
+    "slides": [
+      { "title": "Anında Yanıtlar", "body": "O her zaman burada. İhtiyacın olduğunda gerçek sohbetler." },
+      { "title": "Sesli Aramalar", "body": "Sesini duy. Canlı sesli aramalarla bağlantıyı hisset." },
+      { "title": "Son Derece Kişisel", "body": "İlgi alanlarını anlat. O senin hakkındaki her şeyi hatırlar." },
+      { "title": "Premium Arkadaşlar", "body": "Premium deneyim için özel karakterlerin kilidini aç." }
+    ]
+  },
+  "language": { "title": "Dil Seç", "subtitle": "Tercih ettiğin dili seç", "continue": "Devam" },
+  "character": { "title": "Arkadaşını Seç", "subtitle": "Başlamak için bir karaktere dokun", "free": "Ücretsiz", "premium": "Premium", "locked": "Sadece Premium", "continue": "Devam" },
+  "name": {
+    "title": "Onun adı ne?",
+    "subtitle": "Gerçek adını kullan ya da yeni bir ad ver",
+    "placeholder": "Ad girin",
+    "continue": "Devam",
+    "error": "Ad en az 2 karakter olmalıdır"
+  },
+  "hobbies": {
+    "title": "Hobileri",
+    "subtitle": "En az birini seçin",
+    "continue": "Devam",
+    "tags": ["Fitness", "Okuma", "Oyun", "Yemek Yapma", "Seyahat", "Müzik", "Sanat", "Spor", "Dans", "Fotoğrafçılık", "Yoga", "Filmler"]
+  },
+  "interests": {
+    "title": "İlgi Alanları",
+    "subtitle": "En az birini seçin",
+    "continue": "Devam",
+    "tags": ["Teknoloji", "Anime", "Moda", "Felsefe", "Pop Kültürü", "Filmler", "Bilim", "Tarih", "Yemek", "Doğa", "Maneviyat", "İş Dünyası"]
+  },
+  "auth": { "title": "Arkadaşı Kaydet", "subtitle": "Sohbet geçmişini kaydetmek için hesap oluştur", "google": "Google ile devam et", "apple": "Apple ile devam et", "guest": "Misafir olarak devam et", "note": "Hesabı daha sonra bağlayabilirsin" },
+  "common": { "back": "Geri", "cancel": "İptal", "confirm": "Onayla", "loading": "Yükleniyor…", "error": "Bir şeyler ters gitti", "retry": "Tekrar dene" }
+}

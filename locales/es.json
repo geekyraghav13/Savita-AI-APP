@@ -1,0 +1,35 @@
+{
+  "app": { "name": "SAVITA", "tagline": "Tu IA Compañera" },
+  "onboarding": {
+    "skip": "Omitir", "next": "Siguiente", "getStarted": "Empezar",
+    "slides": [
+      { "title": "Respuestas Instantáneas", "body": "Ella siempre está aquí. Conversaciones reales cuando las necesites." },
+      { "title": "Llamadas de Voz", "body": "Escucha su voz. Siente la conexión con llamadas de audio en vivo." },
+      { "title": "Muy Personal", "body": "Cuéntale tus intereses. Ella recuerda todo sobre ti." },
+      { "title": "Compañeras Premium", "body": "Desbloquea personajes exclusivos para una experiencia premium." }
+    ]
+  },
+  "language": { "title": "Elegir idioma", "subtitle": "Selecciona tu idioma preferido", "continue": "Continuar" },
+  "character": { "title": "Elige tu Compañera", "subtitle": "Toca un personaje para comenzar", "free": "Gratis", "premium": "Premium", "locked": "Solo Premium", "continue": "Continuar" },
+  "name": {
+    "title": "¿Cuál es su nombre?",
+    "subtitle": "Usa su nombre real o dale uno nuevo",
+    "placeholder": "Escribe un nombre",
+    "continue": "Continuar",
+    "error": "El nombre debe tener al menos 2 caracteres"
+  },
+  "hobbies": {
+    "title": "Sus pasatiempos",
+    "subtitle": "Selecciona al menos uno",
+    "continue": "Continuar",
+    "tags": ["Fitness", "Lectura", "Gaming", "Cocina", "Viajes", "Música", "Arte", "Deportes", "Baile", "Fotografía", "Yoga", "Películas"]
+  },
+  "interests": {
+    "title": "Sus intereses",
+    "subtitle": "Selecciona al menos uno",
+    "continue": "Continuar",
+    "tags": ["Tecnología", "Anime", "Moda", "Filosofía", "Cultura Pop", "Películas", "Ciencia", "Historia", "Gastronomía", "Naturaleza", "Espiritualidad", "Negocios"]
+  },
+  "auth": { "title": "Guardar Compañera", "subtitle": "Crea una cuenta para guardar tu historial de chat", "google": "Continuar con Google", "apple": "Continuar con Apple", "guest": "Continuar como invitado", "note": "Puedes vincular una cuenta más tarde" },
+  "common": { "back": "Volver", "cancel": "Cancelar", "confirm": "Confirmar", "loading": "Cargando…", "error": "Algo salió mal", "retry": "Reintentar" }
+}

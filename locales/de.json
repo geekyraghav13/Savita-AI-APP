@@ -1,0 +1,35 @@
+{
+  "app": { "name": "SAVITA", "tagline": "Deine KI-Begleiterin" },
+  "onboarding": {
+    "skip": "Überspringen", "next": "Weiter", "getStarted": "Loslegen",
+    "slides": [
+      { "title": "Sofortige Antworten", "body": "Sie ist immer da. Echte Gespräche, wann immer du sie brauchst." },
+      { "title": "Sprachanrufe", "body": "Hör ihre Stimme. Spüre die Verbindung mit Live-Audioanrufen." },
+      { "title": "Sehr Persönlich", "body": "Erzähl ihr von deinen Interessen. Sie erinnert sich an alles." },
+      { "title": "Premium-Begleiterinnen", "body": "Schalte exklusive Charaktere für ein Premium-Erlebnis frei." }
+    ]
+  },
+  "language": { "title": "Sprache wählen", "subtitle": "Wähle deine bevorzugte Sprache", "continue": "Weiter" },
+  "character": { "title": "Wähle deine Begleiterin", "subtitle": "Tippe auf einen Charakter, um zu beginnen", "free": "Kostenlos", "premium": "Premium", "locked": "Nur Premium", "continue": "Weiter" },
+  "name": {
+    "title": "Wie heißt sie?",
+    "subtitle": "Benutze ihren echten Namen oder gib ihr einen neuen",
+    "placeholder": "Name eingeben",
+    "continue": "Weiter",
+    "error": "Der Name muss mindestens 2 Zeichen haben"
+  },
+  "hobbies": {
+    "title": "Ihre Hobbys",
+    "subtitle": "Mindestens eines auswählen",
+    "continue": "Weiter",
+    "tags": ["Fitness", "Lesen", "Gaming", "Kochen", "Reisen", "Musik", "Kunst", "Sport", "Tanzen", "Fotografie", "Yoga", "Filme"]
+  },
+  "interests": {
+    "title": "Ihre Interessen",
+    "subtitle": "Mindestens eines auswählen",
+    "continue": "Weiter",
+    "tags": ["Technologie", "Anime", "Mode", "Philosophie", "Popkultur", "Filme", "Wissenschaft", "Geschichte", "Essen", "Natur", "Spiritualität", "Business"]
+  },
+  "auth": { "title": "Begleiterin speichern", "subtitle": "Erstelle ein Konto, um deinen Chatverlauf zu speichern", "google": "Mit Google fortfahren", "apple": "Mit Apple fortfahren", "guest": "Als Gast fortfahren", "note": "Du kannst später ein Konto verknüpfen" },
+  "common": { "back": "Zurück", "cancel": "Abbrechen", "confirm": "Bestätigen", "loading": "Laden…", "error": "Etwas ist schiefgelaufen", "retry": "Erneut versuchen" }
+}

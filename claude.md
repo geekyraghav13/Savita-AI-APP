@@ -218,26 +218,28 @@ users/{uid}/
 
 ---
 
-### Day 4 — Language Selector & Character Carousel
+### Day 4 — Language Selector & Character Carousel ✅ DONE
 **Goal:** Let the user pick their language and companion.
 
-- [ ] **Language Selection** (`(onboarding)/language.js`): clean grid of 9 flags/language labels, sets `i18next.changeLanguage()` + Zustand
-- [ ] **Character Carousel** (`(character)/carousel.js`): horizontal scroll, circular badges, tapping a card morphs full-screen background to that character's portrait
-- [ ] Wire Firestore listener to `characters` collection (real-time)
-- [ ] Premium lock badge UI for `isPremium: true` characters
-- [ ] Paywall intercept: if `isPremium && !isPremiumUser` → navigate to `(main)/paywall`
-- [ ] **Image upload walkthrough**: when we reach this screen, user provides character images → I walk through Firebase Storage upload → update Firestore docs with `avatarUrl`
+- [x] **Language Selection** (`(onboarding)/language.js`): clean grid of 9 flags/language labels, sets `i18next.changeLanguage()` + Zustand
+- [x] **Character Carousel** (`(character)/carousel.js`): horizontal scroll, circular thumbnails, tapping crossfades full-screen background to that character's portrait (Reanimated two-layer dissolve)
+- [x] Premium lock badge UI — `Gem` icon + dark overlay for `isPremium: true` characters
+- [x] Paywall intercept: locked character + Continue → `(main)/paywall`
+- [x] **Images stored locally** — 8 characters in `assets/images/characters/`, data in `constants/characters.js` (Firestore sync deferred; not needed unless remote updates required)
+- [x] 4 free characters (Chloe, Maya, Mia, Harper) + 4 premium (Aisha, Hana, Jasmine, Rin)
 
 ---
 
-### Day 5 — Personalization Wizard
+### Day 5 — Personalization Wizard ✅ DONE
 **Goal:** Capture name, hobbies, and interests into Zustand.
 
-- [ ] **Name Screen** (`(character)/name.js`): TextInput pre-filled with `selectedCharacter.name`, gold underline style, validation (min 2 chars)
-- [ ] **Hobbies Screen** (`(character)/hobbies.js`): pill grid, multi-select, min 1 required, "Continue" enables when valid
-- [ ] **Interests Screen** (`(character)/interests.js`): same pill grid pattern, different tags
-- [ ] All selections write directly to Zustand (no API call yet)
-- [ ] Add translations for all pill labels in `en.json`
+- [x] **Name Screen** (`(character)/name.js`): TextInput pre-filled with `selectedCharacter.name`, gold underline, validation (min 2 chars), i18n
+- [x] **Hobbies Screen** (`(character)/hobbies.js`): pill grid, multi-select, min 1 required, Continue disabled until valid, i18n
+- [x] **Interests Screen** (`(character)/interests.js`): same pill grid, routes to gateway (no user) or dashboard (authenticated), i18n
+- [x] All selections write directly to Zustand
+- [x] All 9 languages fully translated (en/hi/pt/de/fr/es/tr/ja/vi) — UI strings + all pill labels
+- [x] `lib/i18n.js` updated to load all 9 locales
+- [x] Carousel premium bypass — any character proceeds to name screen
 
 ---
 
