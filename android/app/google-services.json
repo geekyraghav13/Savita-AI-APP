@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "721544926262",
+    "project_id": "savita-ai-app",
+    "storage_bucket": "savita-ai-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:721544926262:android:3a9eec1a8c6e04340ff497",
+        "android_client_info": {
+          "package_name": "com.savita8284.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "721544926262-ks6tbdgt1nojnfoukn7auampspfortvt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savita8284.app",
+            "certificate_hash": "d8afe374fdc29d9920bf46961e30d0236ecd63da"
+          }
+        },
+        {
+          "client_id": "721544926262-vecb47vir4morouor4glul2una6ssnet.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savita8284.app",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "721544926262-3jsp313333gg2t9g063gor7kjr9pjhj2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLGZUomLXwreG3qieTMSTgGwUONvhzP7E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "721544926262-3jsp313333gg2t9g063gor7kjr9pjhj2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

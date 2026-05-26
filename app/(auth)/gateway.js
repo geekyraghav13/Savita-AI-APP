@@ -1,45 +1,56 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator,
+  ActivityIndicator, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { googleSignIn, anonymousSignIn } from '../../lib/auth';
 import { COLORS, SPACING, RADIUS } from '../../constants/theme';
-import { useGoogleSignIn } from '../../lib/auth';
-import useAppStore from '../../store/useAppStore';
 
 export default function GatewayScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const user = useAppStore((s) => s.user);
-  const setUser = useAppStore((s) => s.setUser);
-  const { request, promptAsync } = useGoogleSignIn();
-  const [loading, setLoading] = useState(false);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [loadingAnon, setLoadingAnon] = useState(false);
 
-  // Firebase auth state or guest mode resolved → move to summary (Day 6: replace with summary)
-  useEffect(() => {
-    if (user) router.replace('/(main)/dashboard');
-  }, [user]);
+  // useAuthListener in root layout writes Firebase user to Zustand.
+  // Once user is set, root layout redirects automatically — no manual push needed here.
 
   const handleGoogle = async () => {
-    setLoading(true);
+    setLoadingGoogle(true);
     try {
-      await promptAsync();
+      await googleSignIn();
+      router.replace('/(main)/dashboard');
+    } catch (err) {
+      if (err.message !== 'cancelled') {
+        Alert.alert('Sign-in failed', err.message ?? 'Something went wrong. Please try again.');
+      }
     } finally {
-      setLoading(false);
+      setLoadingGoogle(false);
     }
   };
 
-  const handleGuest = () => {
-    setUser({ uid: 'guest', displayName: 'Guest', email: null, photoURL: null, isGuest: true });
+  const handleAnonymous = async () => {
+    setLoadingAnon(true);
+    try {
+      await anonymousSignIn();
+      router.replace('/(main)/dashboard');
+    } catch (err) {
+      Alert.alert('Sign-in failed', err.message ?? 'Something went wrong. Please try again.');
+    } finally {
+      setLoadingAnon(false);
+    }
   };
 
-  return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + SPACING.xl }]}>
+  const isLoading = loadingGoogle || loadingAnon;
 
+  return (
+    <View style={[styles.container, { paddingBottom: insets.bottom + SPACING.xl, paddingTop: insets.top + SPACING.xl }]}>
+
+      {/* Branding */}
       <View style={styles.top}>
         <Text style={styles.logo}>SAVITA</Text>
         <View style={styles.divider} />
@@ -47,15 +58,17 @@ export default function GatewayScreen() {
         <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
       </View>
 
+      {/* Buttons */}
       <View style={styles.bottom}>
-        {/* Google Sign-In — active when Firebase is configured */}
+
+        {/* Google Sign-In */}
         <TouchableOpacity
-          style={[styles.googleBtn, (!request || loading) && styles.dimmed]}
+          style={[styles.googleBtn, isLoading && styles.dimmed]}
           onPress={handleGoogle}
-          disabled={!request || loading}
+          disabled={isLoading}
           activeOpacity={0.88}
         >
-          {loading ? (
+          {loadingGoogle ? (
             <ActivityIndicator color="#333" size="small" />
           ) : (
             <>
@@ -65,13 +78,23 @@ export default function GatewayScreen() {
           )}
         </TouchableOpacity>
 
-        {/* Guest mode — always works */}
-        <TouchableOpacity style={styles.guestBtn} onPress={handleGuest} activeOpacity={0.75}>
-          <Text style={styles.guestLabel}>{t('auth.guest')}</Text>
+        {/* Anonymous Sign-In */}
+        <TouchableOpacity
+          style={[styles.anonBtn, isLoading && styles.dimmed]}
+          onPress={handleAnonymous}
+          disabled={isLoading}
+          activeOpacity={0.75}
+        >
+          {loadingAnon ? (
+            <ActivityIndicator color={COLORS.textSecondary} size="small" />
+          ) : (
+            <Text style={styles.anonLabel}>{t('auth.guest')}</Text>
+          )}
         </TouchableOpacity>
 
         <Text style={styles.note}>{t('auth.note')}</Text>
       </View>
+
     </View>
   );
 }
@@ -126,7 +149,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: SPACING.sm,
   },
-  dimmed: { opacity: 0.45 },
   googleG: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -137,17 +159,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333333',
   },
-  guestBtn: {
+  anonBtn: {
     borderRadius: RADIUS.full,
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  guestLabel: {
+  anonLabel: {
     fontSize: 15,
     color: COLORS.textSecondary,
     fontWeight: '500',
+  },
+  dimmed: {
+    opacity: 0.45,
   },
   note: {
     fontSize: 12,
