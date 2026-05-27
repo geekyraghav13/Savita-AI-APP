@@ -243,46 +243,44 @@ users/{uid}/
 
 ---
 
-### Day 6 — Auth Gate & Configuration Summary
-**Goal:** Handle returning vs new users, then confirm the companion setup.
-
-- [ ] **Identity Check** (logic in `(character)/interests.js` `onContinue`): read Zustand `user` — if null, navigate to `(auth)/gateway`; else skip to summary
-- [ ] **Login Gateway** (`(auth)/gateway.js`): high-conversion screen, Google / Apple / Guest buttons, "Continue without account" for Guest
-- [ ] **Configuration Summary** (`(main)/summary.js`): character portrait (large), custom name, hobbies chips, interests chips, "Start Chatting →" button
-- [ ] On "Start Chatting": write `users/{uid}/companions/{id}` doc to Firestore → navigate to `(main)/chat/[id]`
+### Day 6 — Auth Gate ✅ DONE
+**Decisions locked:**
+- Configuration Summary screen → **SKIPPED**. After gateway sign-in, user goes directly to chat.
+- Google Sign-In + Anonymous Sign-In (Firebase) — both working, APK built.
+- `gateway.js` navigates to `/(main)/chat/[selectedCharacter.id]` after successful sign-in.
 
 ---
 
-### Day 7 — Chat Screen & AI Integration
-**Goal:** Build the core messenger and wire the AI with dynamic context.
-
-- [ ] **Chat UI** (`(main)/chat/[id].js`): FlatList messages, typing indicator, character name + presence dot in header, Audio Call button (tap → triggers call popup)
-- [ ] **System prompt builder**: `buildSystemPrompt(character, customName, hobbies, interests, language)` → single function that composes rich context
-- [ ] **10-message limit**: after 10 messages, TextInput becomes non-editable, banner slides up linking to Paywall
-- [ ] **AI client decision**: finalize here — keep OpenRouter or switch to Gemini. Wire selected client to system prompt builder.
-- [ ] Messages persist to Firestore `messages/{companionId}/thread/`
+### Day 7 — Chat Screen + 7-Second Call Intercept ✅ DONE
+**Decisions locked:**
+- Chat UI: header (back→dashboard, avatar, name+online dot, coin badge ✦40, green call btn), FlatList bubbles (user purple right / companion dark-border left), example messages tray (dismissible), input + green send.
+- Prefilled AI responses: 10-item rotation (hardcoded), typing indicator (• • •) with random 900–1500ms delay.
+- **7-second auto-trigger**: module-level Set `callShownForIds` prevents double-trigger across re-renders. Fires once per character ID per JS session.
+- **IncomingCallModal**: React Native `Modal` (transparent, fade, statusBarTranslucent), 3 staggered PulsingRing animations, 8s countdown auto-dismiss, **Accept / Decline / Missed → all push to `/(main)/paywall`** (real paywall Day 8).
+- **Dashboard** (Day 7 functional): top bar (username), companion card (portrait + chips from hobbies/interests), "Continue Chat" → chat, `+ SELECT NEW GIRLFRIEND` fixed bottom → `resetCharacterFlow()` → carousel.
+- **gateway.js**: after sign-in navigates to `/(main)/chat/${selectedCharacter.id}` (fallback: dashboard).
+- **interests.js**: authenticated user → `/(main)/chat/${selectedCharacter.id}` (fallback: dashboard).
+- Android hardware back on chat screen → `/(main)/dashboard` via BackHandler override.
 
 ---
 
-### Day 8 — RevenueCat & The 7-Second Intercept
-**Goal:** Drive subscriptions with the core monetization mechanic.
+### Day 8 — RevenueCat & Paywall
+**Goal:** Wire subscriptions and connect call outcomes to paywall.
 
 - [ ] Install `react-native-purchases`, initialize RevenueCat in `lib/revenuecat.js`
-- [ ] Fetch offerings on app start, write `isPremium` to Zustand via `useCustomerInfo` listener
-- [ ] **Paywall Screen** (`(main)/paywall.js`): character portrait backdrop, 3 plan cards (Weekly / Monthly / Yearly), purchase handler, restore purchases link
-- [ ] **7-Second Timer**: on first chat session entry (new companion only), start a 7000ms timer. On fire → show `IncomingCallModal`
-- [ ] **IncomingCallModal**: full-screen overlay, character avatar pulsing with ring animation, Accept (green) / Decline (red) buttons + auto-dismiss to "missed call" after 8s
-- [ ] All three outcomes (Accept / Decline / Missed) → navigate to Paywall
+- [ ] **Paywall Screen** (`(main)/paywall.js`): character portrait backdrop, 3 plan cards (Weekly / Monthly / Yearly)
+- [ ] **Connect call outcomes → Paywall**: Accept / Decline / Missed all navigate to paywall instead of dismissing
+- [ ] Premium unlock restores full chat access
 
 ---
 
-### Day 9 — Dashboard & Companion Loop
-**Goal:** Build the history view and close the engagement loop.
+### Day 9 — Polish, Firestore Sync & AI
+**Goal:** Wire real AI, persist messages, harden the app.
 
-- [ ] **Chat History Dashboard** (`(main)/dashboard.js`): vertical list of `user_companions` sorted by `lastMessageAt`, each row shows character portrait + custom name + last message preview
-- [ ] Header: account settings icon, subscription badge, logout, delete account
-- [ ] Back button from `chat/[id]` → navigates to `dashboard`, not app exit (override Android back handler)
-- [ ] **Bottom Anchor** `+ SELECT NEW GIRLFRIEND`: full-width button, fixed to bottom of dashboard, tapping clears `selectedCharacter`/`customName`/`hobbies`/`interests` from Zustand → navigates to Character Carousel. Auth step skipped entirely for logged-in users.
+- [ ] **AI integration**: wire chosen provider (OpenRouter or Gemini) with `buildSystemPrompt(character, customName, hobbies, interests, language)`
+- [ ] Messages persist to Firestore `messages/{companionId}/thread/`
+- [ ] Dashboard loads real companion history from Firestore
+- [ ] 10-message free limit: TextInput locks, upgrade banner appears
 
 ---
 

@@ -14,8 +14,9 @@ export default function InterestsScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
 
-  const setInterests = useAppStore((s) => s.setInterests);
-  const user = useAppStore((s) => s.user);
+  const setInterests      = useAppStore((s) => s.setInterests);
+  const user              = useAppStore((s) => s.user);
+  const selectedCharacter = useAppStore((s) => s.selectedCharacter);
   const [selected, setSelected] = useState([]);
 
   const tags = t('interests.tags', { returnObjects: true });
@@ -31,7 +32,13 @@ export default function InterestsScreen() {
     if (!isValid) return;
     setInterests(selected);
     if (user) {
-      router.replace('/(main)/dashboard');
+      // Already authenticated — go straight to chat
+      const chatId = selectedCharacter?.id;
+      if (chatId) {
+        router.replace(`/(main)/chat/${chatId}`);
+      } else {
+        router.replace('/(main)/dashboard');
+      }
     } else {
       router.push('/(auth)/gateway');
     }

@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { googleSignIn, anonymousSignIn } from '../../lib/auth';
 import { COLORS, SPACING, RADIUS } from '../../constants/theme';
+import useAppStore from '../../store/useAppStore';
 
 export default function GatewayScreen() {
   const { t } = useTranslation();
@@ -16,14 +17,22 @@ export default function GatewayScreen() {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingAnon, setLoadingAnon] = useState(false);
 
-  // useAuthListener in root layout writes Firebase user to Zustand.
-  // Once user is set, root layout redirects automatically — no manual push needed here.
+  const selectedCharacter = useAppStore((s) => s.selectedCharacter);
+
+  // After sign-in, go straight to chat if a character is selected
+  const afterSignIn = () => {
+    if (selectedCharacter?.id) {
+      router.replace(`/(main)/chat/${selectedCharacter.id}`);
+    } else {
+      router.replace('/(main)/dashboard');
+    }
+  };
 
   const handleGoogle = async () => {
     setLoadingGoogle(true);
     try {
       await googleSignIn();
-      router.replace('/(main)/dashboard');
+      afterSignIn();
     } catch (err) {
       if (err.message !== 'cancelled') {
         Alert.alert('Sign-in failed', err.message ?? 'Something went wrong. Please try again.');
@@ -37,7 +46,7 @@ export default function GatewayScreen() {
     setLoadingAnon(true);
     try {
       await anonymousSignIn();
-      router.replace('/(main)/dashboard');
+      afterSignIn();
     } catch (err) {
       Alert.alert('Sign-in failed', err.message ?? 'Something went wrong. Please try again.');
     } finally {
