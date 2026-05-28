@@ -257,10 +257,12 @@ users/{uid}/
 - Prefilled AI responses: 10-item rotation (hardcoded), typing indicator (• • •) with random 900–1500ms delay.
 - **7-second auto-trigger**: module-level Set `callShownForIds` prevents double-trigger across re-renders. Fires once per character ID per JS session.
 - **IncomingCallModal**: React Native `Modal` (transparent, fade, statusBarTranslucent), 3 staggered PulsingRing animations, 8s countdown auto-dismiss, **Accept / Decline / Missed → all push to `/(main)/paywall`** (real paywall Day 8).
-- **Dashboard** (Day 7 functional): top bar (username), companion card (portrait + chips from hobbies/interests), "Continue Chat" → chat, `+ SELECT NEW GIRLFRIEND` fixed bottom → `resetCharacterFlow()` → carousel.
+- **Dashboard**: pure black bg, username + ⭐ PRO badge + ⚙️ gear header, companion row (avatar + name + last message preview), white pill "Select New Girlfriend" at bottom.
+- **Settings screen** (`(main)/settings.js`): Share, Rate, Email Support, Privacy Policy, Terms, Delete all data (resets store → splash).
 - **gateway.js**: after sign-in navigates to `/(main)/chat/${selectedCharacter.id}` (fallback: dashboard).
 - **interests.js**: authenticated user → `/(main)/chat/${selectedCharacter.id}` (fallback: dashboard).
 - Android hardware back on chat screen → `/(main)/dashboard` via BackHandler override.
+- **Auth bug fixed**: `secrets.js` filled with real Firebase config from `google-services.json`. `lib/firebase.js` updated to use `initializeAuth` + `getReactNativePersistence(AsyncStorage)` for persistent auth on Android. Anonymous sign-in has local guest fallback if Firebase anonymous auth is disabled. APK rebuilt and verified.
 
 ---
 
