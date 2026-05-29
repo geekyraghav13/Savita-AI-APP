@@ -12,24 +12,98 @@
   "language": { "title": "Dil Seç", "subtitle": "Tercih ettiğin dili seç", "continue": "Devam" },
   "character": { "title": "Arkadaşını Seç", "subtitle": "Başlamak için bir karaktere dokun", "free": "Ücretsiz", "premium": "Premium", "locked": "Sadece Premium", "continue": "Devam" },
   "name": {
-    "title": "Onun adı ne?",
-    "subtitle": "Gerçek adını kullan ya da yeni bir ad ver",
-    "placeholder": "Ad girin",
-    "continue": "Devam",
-    "error": "Ad en az 2 karakter olmalıdır"
+    "title": "Onun adı ne?", "subtitle": "Gerçek adını kullan ya da yeni bir ad ver",
+    "placeholder": "Ad girin", "continue": "Devam", "error": "Ad en az 2 karakter olmalıdır"
   },
   "hobbies": {
-    "title": "Hobileri",
-    "subtitle": "En az birini seçin",
-    "continue": "Devam",
+    "title": "Hobileri", "subtitle": "En az birini seçin", "continue": "Devam",
     "tags": ["Fitness", "Okuma", "Oyun", "Yemek Yapma", "Seyahat", "Müzik", "Sanat", "Spor", "Dans", "Fotoğrafçılık", "Yoga", "Filmler"]
   },
   "interests": {
-    "title": "İlgi Alanları",
-    "subtitle": "En az birini seçin",
-    "continue": "Devam",
+    "title": "İlgi Alanları", "subtitle": "En az birini seçin", "continue": "Devam",
     "tags": ["Teknoloji", "Anime", "Moda", "Felsefe", "Pop Kültürü", "Filmler", "Bilim", "Tarih", "Yemek", "Doğa", "Maneviyat", "İş Dünyası"]
   },
-  "auth": { "title": "Arkadaşı Kaydet", "subtitle": "Sohbet geçmişini kaydetmek için hesap oluştur", "google": "Google ile devam et", "apple": "Apple ile devam et", "guest": "Misafir olarak devam et", "note": "Hesabı daha sonra bağlayabilirsin" },
-  "common": { "back": "Geri", "cancel": "İptal", "confirm": "Onayla", "loading": "Yükleniyor…", "error": "Bir şeyler ters gitti", "retry": "Tekrar dene" }
+  "auth": {
+    "title": "Arkadaşı Kaydet", "subtitle": "Sohbet geçmişini kaydetmek için hesap oluştur",
+    "google": "Google ile devam et", "guest": "Misafir olarak devam et",
+    "note": "Hesabı daha sonra bağlayabilirsin", "signInFailed": "Giriş başarısız"
+  },
+  "chat": {
+    "openingMessage": "Hey {{name}}! 💕 Seni bekliyordum. Bugün aklında ne var?",
+    "online": "Çevrimiçi",
+    "placeholder": "Mesajınızı yazın",
+    "lockedPlaceholder": "Devam etmek için yükseltin...",
+    "exampleMessages": "Örnek mesajlar",
+    "msgsLeft": "{{count}} kaldı",
+    "limitBadge": "Limit",
+    "typing": "yazıyor…",
+    "lockedTitle": "5 ücretsiz mesajınızı kullandınız",
+    "lockedSub": "{{name}} ile sohbet etmeye devam etmek için yükseltin ✨",
+    "lockedCta": "Kilidi Aç →",
+    "callIncoming": "Gelen sesli arama",
+    "callAutoDismiss": "{{count}}s içinde kapanır",
+    "callAccept": "Kabul Et",
+    "callDecline": "Reddet",
+    "exampleList": ["Fotoğraf gönder {{name}}", "Çok sıkıldım {{name}}", "Video gönder {{name}}", "Bana bir şey söyle 🔥", "Özledin mi?"]
+  },
+  "dashboard": {
+    "emptyText": "Henüz konuşma yok",
+    "emptySub": "Sohbet başlatmak için bir kız arkadaş seçin",
+    "selectNew": "Yeni Kız Arkadaş Seç",
+    "openingMessage": "Hey {{name}}! 💕 Seni bekliyordum. Bugün aklında ne var?"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "share": "SAVITA'yı Paylaş",
+    "rate": "Beğendin mi? Bizi Oyla ❤️",
+    "emailSupport": "E-posta Desteği",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfService": "Kullanım Şartları",
+    "signOut": "Çıkış Yap",
+    "signOutTitle": "Çıkış Yap",
+    "signOutMessage": "Çıkış yapmak istediğinden emin misin?",
+    "signOutConfirm": "Çıkış Yap",
+    "deleteAccount": "Hesabı Sil",
+    "deleteAccountTitle": "Hesabı Sil",
+    "deleteAccountMessage": "Bu işlem hesabını ve tüm verilerini kalıcı olarak siler. Bu geri alınamaz.",
+    "deleteAccountConfirm": "Hesabı Sil",
+    "deleteAccountFailed": "Silme başarısız",
+    "deleteAccountReauth": "Hesabını silmek için lütfen tekrar giriş yap.",
+    "deleteData": "Tüm verileri sil",
+    "deleteTitle": "Tüm verileri sil",
+    "deleteMessage": "Bu sizi çıkış yapacak ve tüm konuşmaları sıfırlayacak. Bu geri alınamaz.",
+    "deleteCancel": "İptal",
+    "deleteConfirm": "Sil"
+  },
+  "paywall": {
+    "eyebrow": "✦ PREMİUM'U AÇ",
+    "title": "{{name}} ile\ndaha derine git",
+    "subtitle": "Sınırsız mesaj • Tüm arkadaşlar\nSesli aramalar • Sınır yok",
+    "tryFree": "Ücretsiz dene",
+    "save90": "%90 tasarruf  •  $0,57/hafta",
+    "payOnce": "Bir kez öde, sonsuza sahip ol",
+    "bestValue": "EN İYİ DEĞER",
+    "weekly": "Haftalık",
+    "yearly": "Yıllık",
+    "lifetime": "Ömür Boyu",
+    "perWeek": "/ hafta",
+    "perYear": "/ yıl",
+    "oneTime": "tek seferlik",
+    "cta": "{{plan}} ile Devam Et",
+    "restore": "Satın almaları geri yükle",
+    "legal": "Abonelikler, yenileme tarihinden en az 24 saat önce iptal edilmediği sürece otomatik olarak yenilenir.",
+    "notAvailable": "Mevcut değil",
+    "notAvailableMsg": "Bu plan şu anda mevcut değil. Lütfen tekrar deneyin.",
+    "purchaseFailed": "Satın alma başarısız",
+    "restored": "Geri yüklendi!",
+    "restoredMsg": "Premium erişiminiz geri yüklendi.",
+    "noPurchase": "Satın alma bulunamadı",
+    "noPurchaseMsg": "Bu hesap için aktif abonelik bulunamadı.",
+    "restoreFailed": "Geri yükleme başarısız",
+    "ok": "Tamam"
+  },
+  "common": {
+    "back": "Geri", "cancel": "İptal", "confirm": "Onayla",
+    "loading": "Yükleniyor…", "error": "Bir şeyler ters gitti", "retry": "Tekrar dene"
+  }
 }

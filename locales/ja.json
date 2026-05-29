@@ -12,24 +12,98 @@
   "language": { "title": "言語を選択", "subtitle": "お好みの言語を選んでください", "continue": "続ける" },
   "character": { "title": "コンパニオンを選ぶ", "subtitle": "キャラクターをタップして始める", "free": "無料", "premium": "プレミアム", "locked": "プレミアム限定", "continue": "続ける" },
   "name": {
-    "title": "彼女の名前は？",
-    "subtitle": "本名を使うか、新しい名前をつけよう",
-    "placeholder": "名前を入力",
-    "continue": "続ける",
-    "error": "名前は2文字以上必要です"
+    "title": "彼女の名前は？", "subtitle": "本名を使うか、新しい名前をつけよう",
+    "placeholder": "名前を入力", "continue": "続ける", "error": "名前は2文字以上必要です"
   },
   "hobbies": {
-    "title": "彼女の趣味",
-    "subtitle": "1つ以上選んでください",
-    "continue": "続ける",
+    "title": "彼女の趣味", "subtitle": "1つ以上選んでください", "continue": "続ける",
     "tags": ["フィットネス", "読書", "ゲーム", "料理", "旅行", "音楽", "アート", "スポーツ", "ダンス", "写真", "ヨガ", "映画"]
   },
   "interests": {
-    "title": "彼女の興味",
-    "subtitle": "1つ以上選んでください",
-    "continue": "続ける",
+    "title": "彼女の興味", "subtitle": "1つ以上選んでください", "continue": "続ける",
     "tags": ["テック", "アニメ", "ファッション", "哲学", "ポップカルチャー", "映画", "科学", "歴史", "グルメ", "自然", "スピリチュアル", "ビジネス"]
   },
-  "auth": { "title": "コンパニオンを保存", "subtitle": "チャット履歴を保存するためにアカウントを作成", "google": "Googleで続ける", "apple": "Appleで続ける", "guest": "ゲストとして続ける", "note": "後でアカウントを連携できます" },
-  "common": { "back": "戻る", "cancel": "キャンセル", "confirm": "確認", "loading": "読み込み中…", "error": "エラーが発生しました", "retry": "再試行" }
+  "auth": {
+    "title": "コンパニオンを保存", "subtitle": "チャット履歴を保存するためにアカウントを作成",
+    "google": "Googleで続ける", "guest": "ゲストとして続ける",
+    "note": "後でアカウントを連携できます", "signInFailed": "サインイン失敗"
+  },
+  "chat": {
+    "openingMessage": "ねえ{{name}}！💕 ずっと待ってたよ。今日は何を考えてるの？",
+    "online": "オンライン",
+    "placeholder": "メッセージを入力",
+    "lockedPlaceholder": "続けるにはアップグレード...",
+    "exampleMessages": "例文メッセージ",
+    "msgsLeft": "残り{{count}}件",
+    "limitBadge": "上限",
+    "typing": "入力中…",
+    "lockedTitle": "無料メッセージ5件を使い切りました",
+    "lockedSub": "{{name}}とのチャットを続けるにはアップグレードを ✨",
+    "lockedCta": "アンロック →",
+    "callIncoming": "着信音声通話",
+    "callAutoDismiss": "{{count}}秒後に閉じます",
+    "callAccept": "受ける",
+    "callDecline": "断る",
+    "exampleList": ["写真を送って{{name}}", "暇だよ{{name}}", "動画を送って{{name}}", "何か教えて 🔥", "寂しかった？"]
+  },
+  "dashboard": {
+    "emptyText": "まだ会話がありません",
+    "emptySub": "チャットを始めるための彼女を選んでください",
+    "selectNew": "新しい彼女を選ぶ",
+    "openingMessage": "ねえ{{name}}！💕 ずっと待ってたよ。今日は何を考えてるの？"
+  },
+  "settings": {
+    "title": "設定",
+    "share": "SAVITAをシェア",
+    "rate": "気に入った？評価してね ❤️",
+    "emailSupport": "メールサポート",
+    "privacyPolicy": "プライバシーポリシー",
+    "termsOfService": "利用規約",
+    "signOut": "サインアウト",
+    "signOutTitle": "サインアウト",
+    "signOutMessage": "サインアウトしてもよろしいですか？",
+    "signOutConfirm": "サインアウト",
+    "deleteAccount": "アカウントを削除",
+    "deleteAccountTitle": "アカウントを削除",
+    "deleteAccountMessage": "アカウントとすべてのデータが永久に削除されます。この操作は取り消せません。",
+    "deleteAccountConfirm": "アカウントを削除",
+    "deleteAccountFailed": "削除失敗",
+    "deleteAccountReauth": "アカウントを削除するには再度サインインしてください。",
+    "deleteData": "すべてのデータを削除",
+    "deleteTitle": "すべてのデータを削除",
+    "deleteMessage": "これによりサインアウトし、すべての会話がリセットされます。この操作は取り消せません。",
+    "deleteCancel": "キャンセル",
+    "deleteConfirm": "削除"
+  },
+  "paywall": {
+    "eyebrow": "✦ プレミアムを解放",
+    "title": "{{name}}と\nもっと深く",
+    "subtitle": "無制限メッセージ • すべての相棒\n音声通話 • 制限なし",
+    "tryFree": "無料で試す",
+    "save90": "90%オフ  •  $0.57/週",
+    "payOnce": "一度払えば永久に",
+    "bestValue": "最高のお得",
+    "weekly": "週払い",
+    "yearly": "年払い",
+    "lifetime": "永久",
+    "perWeek": "/ 週",
+    "perYear": "/ 年",
+    "oneTime": "一度だけ",
+    "cta": "{{plan}}で続ける",
+    "restore": "購入を復元",
+    "legal": "サブスクリプションは更新日の24時間前までにキャンセルしない限り自動更新されます。",
+    "notAvailable": "利用不可",
+    "notAvailableMsg": "このプランは現在利用できません。もう一度お試しください。",
+    "purchaseFailed": "購入失敗",
+    "restored": "復元完了！",
+    "restoredMsg": "プレミアムアクセスが復元されました。",
+    "noPurchase": "購入が見つかりません",
+    "noPurchaseMsg": "このアカウントのアクティブなサブスクリプションが見つかりませんでした。",
+    "restoreFailed": "復元失敗",
+    "ok": "OK"
+  },
+  "common": {
+    "back": "戻る", "cancel": "キャンセル", "confirm": "確認",
+    "loading": "読み込み中…", "error": "エラーが発生しました", "retry": "再試行"
+  }
 }

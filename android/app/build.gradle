@@ -5,6 +5,13 @@ apply plugin: "com.google.gms.google-services"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
+// Load signing credentials from keystore.properties (gitignored)
+def keystorePropsFile = rootProject.file("keystore.properties")
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -93,8 +100,8 @@ android {
         applicationId 'com.savita8284.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 5
+        versionName "1.0.4"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
@@ -106,7 +113,12 @@ android {
             keyPassword 'android'
         }
         release {
-            if (project.hasProperty('SAVITA_UPLOAD_STORE_FILE')) {
+            if (keystoreProps['SAVITA_UPLOAD_STORE_FILE']) {
+                storeFile file(keystoreProps['SAVITA_UPLOAD_STORE_FILE'])
+                storePassword keystoreProps['SAVITA_UPLOAD_STORE_PASSWORD']
+                keyAlias keystoreProps['SAVITA_UPLOAD_KEY_ALIAS']
+                keyPassword keystoreProps['SAVITA_UPLOAD_KEY_PASSWORD']
+            } else if (project.hasProperty('SAVITA_UPLOAD_STORE_FILE')) {
                 storeFile file(SAVITA_UPLOAD_STORE_FILE)
                 storePassword SAVITA_UPLOAD_STORE_PASSWORD
                 keyAlias SAVITA_UPLOAD_KEY_ALIAS

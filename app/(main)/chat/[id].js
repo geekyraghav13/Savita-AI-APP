@@ -6,10 +6,16 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Phone, PhoneOff } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+import { ChevronLeft, Phone, PhoneOff, Lock } from 'lucide-react-native';
 import useAppStore from '../../../store/useAppStore';
 import { CHARACTERS } from '../../../constants/characters';
 import { COLORS, SPACING, RADIUS } from '../../../constants/theme';
+import { showPaywall, checkPremiumStatus } from '../../../lib/revenuecat';
+
+const FREE_MSG_LIMIT = 5;
+const LIFETIME_MSGS_KEY = '@savita/lifetime_msgs';
 
 // ── Per-session call deduplication ───────────────────────────────────────────
 const callShownForIds = new Set();
@@ -28,16 +34,6 @@ const AI_RESPONSES = [
   "You're seriously the best part of my day 🌸",
 ];
 let aiIndex = 0;
-
-function getExampleMessages(name) {
-  return [
-    `Send photo ${name}`,
-    `I'm so boring ${name}`,
-    `Send a video ${name}`,
-    `Tell me something 🔥`,
-    `Miss me?`,
-  ];
-}
 
 // ── Pulsing ring ──────────────────────────────────────────────────────────────
 function PulsingRing({ delay, baseSize }) {
@@ -66,11 +62,10 @@ function PulsingRing({ delay, baseSize }) {
     <Animated.View
       style={{
         position: 'absolute',
-        width:        baseSize,
-        height:       baseSize,
+        width: baseSize, height: baseSize,
         borderRadius: baseSize / 2,
-        borderWidth:  1.5,
-        borderColor:  'rgba(255,255,255,0.4)',
+        borderWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.4)',
         opacity,
         transform: [{ scale }],
       }}
@@ -78,8 +73,9 @@ function PulsingRing({ delay, baseSize }) {
   );
 }
 
-// ── Incoming call content (rendered inside Modal) ─────────────────────────────
+// ── Incoming call content ─────────────────────────────────────────────────────
 function CallModalContent({ character, displayName, onAccept, onDecline }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [secondsLeft, setSecondsLeft] = useState(8);
   const AVATAR = 128;
@@ -87,11 +83,7 @@ function CallModalContent({ character, displayName, onAccept, onDecline }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setSecondsLeft((s) => {
-        if (s <= 1) {
-          clearInterval(interval);
-          onDecline('missed');
-          return 0;
-        }
+        if (s <= 1) { clearInterval(interval); onDecline('missed'); return 0; }
         return s - 1;
       });
     }, 1000);
@@ -99,16 +91,9 @@ function CallModalContent({ character, displayName, onAccept, onDecline }) {
   }, []);
 
   return (
-    <View
-      style={[
-        callStyles.container,
-        { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 56 },
-      ]}
-    >
-      {/* Label */}
-      <Text style={callStyles.incomingLabel}>Incoming voice call</Text>
+    <View style={[callStyles.container, { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 56 }]}>
+      <Text style={callStyles.incomingLabel}>{t('chat.callIncoming')}</Text>
 
-      {/* Avatar + rings */}
       <View style={{ alignItems: 'center', justifyContent: 'center' }}>
         <View style={{ width: AVATAR, height: AVATAR, alignItems: 'center', justifyContent: 'center' }}>
           <PulsingRing delay={0}    baseSize={AVATAR} />
@@ -121,34 +106,23 @@ function CallModalContent({ character, displayName, onAccept, onDecline }) {
         </View>
       </View>
 
-      {/* Name + timer */}
       <View style={{ alignItems: 'center', gap: 6 }}>
         <Text style={callStyles.callerName}>{displayName}</Text>
-        <Text style={callStyles.timerText}>Auto-dismiss in {secondsLeft}s</Text>
+        <Text style={callStyles.timerText}>{t('chat.callAutoDismiss', { count: secondsLeft })}</Text>
       </View>
 
-      {/* Decline / Accept */}
       <View style={callStyles.btnRow}>
         <View style={callStyles.btnWrap}>
-          <TouchableOpacity
-            style={callStyles.declineBtn}
-            onPress={() => onDecline('declined')}
-            activeOpacity={0.85}
-          >
+          <TouchableOpacity style={callStyles.declineBtn} onPress={() => onDecline('declined')} activeOpacity={0.85}>
             <PhoneOff color="#fff" size={32} strokeWidth={2.2} />
           </TouchableOpacity>
-          <Text style={callStyles.btnLabel}>Decline</Text>
+          <Text style={callStyles.btnLabel}>{t('chat.callDecline')}</Text>
         </View>
-
         <View style={callStyles.btnWrap}>
-          <TouchableOpacity
-            style={callStyles.acceptBtn}
-            onPress={onAccept}
-            activeOpacity={0.85}
-          >
+          <TouchableOpacity style={callStyles.acceptBtn} onPress={onAccept} activeOpacity={0.85}>
             <Phone color="#fff" size={32} strokeWidth={2.2} fill="#fff" />
           </TouchableOpacity>
-          <Text style={callStyles.btnLabel}>Accept</Text>
+          <Text style={callStyles.btnLabel}>{t('chat.callAccept')}</Text>
         </View>
       </View>
     </View>
@@ -157,39 +131,48 @@ function CallModalContent({ character, displayName, onAccept, onDecline }) {
 
 // ── Chat Screen ───────────────────────────────────────────────────────────────
 export default function ChatScreen() {
-  const router   = useRouter();
-  const insets   = useSafeAreaInsets();
-  const { id }   = useLocalSearchParams();
+  const { t } = useTranslation();
+  const router  = useRouter();
+  const insets  = useSafeAreaInsets();
+  const { id }  = useLocalSearchParams();
 
-  const selectedCharacter    = useAppStore((s) => s.selectedCharacter);
-  const customName           = useAppStore((s) => s.customName);
-  const user                 = useAppStore((s) => s.user);
+  const selectedCharacter     = useAppStore((s) => s.selectedCharacter);
+  const customName            = useAppStore((s) => s.customName);
+  const user                  = useAppStore((s) => s.user);
+  const isPremium             = useAppStore((s) => s.isPremium);
+  const setIsPremium          = useAppStore((s) => s.setIsPremium);
   const incrementMessageCount = useAppStore((s) => s.incrementMessageCount);
 
-  const character    = CHARACTERS.find((c) => c.id === id) ?? selectedCharacter;
-  const displayName  = customName?.trim() || character?.name || 'Companion';
-  const userName     = user?.displayName?.split(' ')[0]
-                    ?? user?.email?.split('@')[0]
-                    ?? 'you';
+  const character   = CHARACTERS.find((c) => c.id === id) ?? selectedCharacter;
+  const displayName = customName?.trim() || character?.name || 'Companion';
+  const userName    = user?.displayName?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'you';
 
-  const [messages,      setMessages]      = useState([]);
-  const [inputText,     setInputText]     = useState('');
-  const [isTyping,      setIsTyping]      = useState(false);
-  const [showExamples,  setShowExamples]  = useState(true);
-  const [showCallModal, setShowCallModal] = useState(false);
+  const [messages,       setMessages]       = useState([]);
+  const [inputText,      setInputText]      = useState('');
+  const [isTyping,       setIsTyping]       = useState(false);
+  const [showExamples,   setShowExamples]   = useState(true);
+  const [showCallModal,  setShowCallModal]  = useState(false);
+  const [lifetimeMsgs,   setLifetimeMsgs]  = useState(0);
+  const [paywallLoading, setPaywallLoading] = useState(false);
 
-  const flatListRef    = useRef(null);
-  const callTimerRef   = useRef(null);
+  const flatListRef  = useRef(null);
+  const callTimerRef = useRef(null);
+
+  const isLocked = !isPremium && lifetimeMsgs >= FREE_MSG_LIMIT;
+
+  // ── Load lifetime message count from storage ──────────────────────────────
+  useEffect(() => {
+    AsyncStorage.getItem(LIFETIME_MSGS_KEY).then((val) => {
+      setLifetimeMsgs(val ? parseInt(val, 10) : 0);
+    });
+  }, []);
 
   // ── Init: opening message + 7-second call timer ───────────────────────────
   useEffect(() => {
-    setMessages([
-      {
-        id:   'open',
-        role: 'companion',
-        text: `Hey ${userName}! 💕 I've been waiting for you. What's on your mind today?`,
-      },
-    ]);
+    setMessages([{
+      id: 'open', role: 'companion',
+      text: t('chat.openingMessage', { name: userName }),
+    }]);
 
     if (!callShownForIds.has(id)) {
       callTimerRef.current = setTimeout(() => {
@@ -212,34 +195,70 @@ export default function ChatScreen() {
     }, [router])
   );
 
+  // ── Show RevenueCat paywall, then re-check premium ────────────────────────
+  const triggerPaywall = useCallback(async () => {
+    if (paywallLoading) return;
+    setPaywallLoading(true);
+    try {
+      const purchased = await showPaywall();
+      if (purchased) {
+        setIsPremium(true);
+      } else {
+        // Re-check in case they restored on another device
+        const stillPremium = await checkPremiumStatus();
+        setIsPremium(stillPremium);
+      }
+    } finally {
+      setPaywallLoading(false);
+    }
+  }, [paywallLoading, setIsPremium]);
+
   // ── Send message ──────────────────────────────────────────────────────────
   const sendMessage = useCallback(
-    (text) => {
+    async (text) => {
       const trimmed = (text ?? inputText).trim();
       if (!trimmed) return;
+
+      // Free limit check
+      if (!isPremium && lifetimeMsgs >= FREE_MSG_LIMIT) {
+        triggerPaywall();
+        return;
+      }
 
       const userMsg = { id: `u${Date.now()}`, role: 'user', text: trimmed };
       setMessages((prev) => [...prev, userMsg]);
       if (text === undefined) setInputText('');
       incrementMessageCount();
-      setIsTyping(true);
 
+      // Increment lifetime count for free users
+      if (!isPremium) {
+        const newCount = lifetimeMsgs + 1;
+        setLifetimeMsgs(newCount);
+        AsyncStorage.setItem(LIFETIME_MSGS_KEY, String(newCount));
+      }
+
+      setIsTyping(true);
       const delay = 900 + Math.floor(Math.random() * 600);
       setTimeout(() => {
         const reply = AI_RESPONSES[aiIndex++ % AI_RESPONSES.length];
-        setMessages((prev) => [
-          ...prev,
-          { id: `c${Date.now()}`, role: 'companion', text: reply },
-        ]);
+        setMessages((prev) => [...prev, { id: `c${Date.now()}`, role: 'companion', text: reply }]);
         setIsTyping(false);
       }, delay);
     },
-    [inputText, incrementMessageCount]
+    [inputText, incrementMessageCount, isPremium, lifetimeMsgs, triggerPaywall]
   );
 
-  // ── Call outcomes: all → paywall ──────────────────────────────────────────
-  const handleAccept  = useCallback(() => { setShowCallModal(false); router.push('/(main)/paywall'); }, [router]);
-  const handleDecline = useCallback(() => { setShowCallModal(false); router.push('/(main)/paywall'); }, [router]);
+  // ── Call outcomes → RevenueCat paywall ───────────────────────────────────
+  const handleAccept = useCallback(() => {
+    setShowCallModal(false);
+    // Short delay so modal closes before paywall appears
+    setTimeout(() => triggerPaywall(), 300);
+  }, [triggerPaywall]);
+
+  const handleDecline = useCallback(() => {
+    setShowCallModal(false);
+    setTimeout(() => triggerPaywall(), 300);
+  }, [triggerPaywall]);
 
   // ── Message renderer ──────────────────────────────────────────────────────
   const renderMessage = useCallback(({ item }) => {
@@ -247,17 +266,15 @@ export default function ChatScreen() {
     return (
       <View style={[styles.bubbleWrap, isUser ? styles.bubbleRight : styles.bubbleLeft]}>
         <View style={[styles.bubble, isUser ? styles.userBubble : styles.companionBubble]}>
-          <Text style={[styles.bubbleText, isUser && styles.userBubbleText]}>
-            {item.text}
-          </Text>
+          <Text style={[styles.bubbleText, isUser && styles.userBubbleText]}>{item.text}</Text>
         </View>
       </View>
     );
   }, []);
 
-  const exampleMsgs = getExampleMessages(displayName);
+  const exampleMsgs = t('chat.exampleList', { returnObjects: true, name: displayName });
+  const msgsLeft    = Math.max(0, FREE_MSG_LIMIT - lifetimeMsgs);
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
 
@@ -278,18 +295,26 @@ export default function ChatScreen() {
             <Text style={styles.headerName}>{displayName}</Text>
             <View style={styles.onlineRow}>
               <View style={styles.onlineDot} />
-              <Text style={styles.onlineText}>Online</Text>
+              <Text style={styles.onlineText}>{t('chat.online')}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.headerRight}>
-          {/* Coin badge */}
-          <View style={styles.coinBadge}>
-            <Text style={styles.coinStar}>✦</Text>
-            <Text style={styles.coinNum}>40</Text>
-          </View>
-          {/* Call button */}
+          {/* Free message counter badge (only for non-premium) */}
+          {!isPremium && (
+            <View style={[styles.coinBadge, isLocked && styles.coinBadgeLocked]}>
+              <Text style={styles.coinStar}>{isLocked ? '🔒' : '✦'}</Text>
+              <Text style={[styles.coinNum, isLocked && styles.coinNumLocked]}>
+                {isLocked ? t('chat.limitBadge') : t('chat.msgsLeft', { count: msgsLeft })}
+              </Text>
+            </View>
+          )}
+          {isPremium && (
+            <View style={styles.proBadge}>
+              <Text style={styles.proBadgeText}>✦ PRO</Text>
+            </View>
+          )}
           <TouchableOpacity
             style={styles.callHeaderBtn}
             onPress={() => setShowCallModal(true)}
@@ -301,10 +326,7 @@ export default function ChatScreen() {
       </View>
 
       {/* ── Messages + Input ── */}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -326,10 +348,10 @@ export default function ChatScreen() {
         />
 
         {/* Example messages tray */}
-        {showExamples && (
+        {showExamples && !isLocked && (
           <View style={styles.examplesTray}>
             <View style={styles.examplesHeader}>
-              <Text style={styles.examplesTitle}>Example messages</Text>
+              <Text style={styles.examplesTitle}>{t('chat.exampleMessages')}</Text>
               <TouchableOpacity
                 onPress={() => setShowExamples(false)}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -358,40 +380,51 @@ export default function ChatScreen() {
           </View>
         )}
 
+        {/* Locked upgrade banner */}
+        {isLocked && (
+          <TouchableOpacity
+            style={styles.lockedBanner}
+            onPress={triggerPaywall}
+            activeOpacity={0.85}
+          >
+            <Lock color={COLORS.gold} size={18} strokeWidth={2.5} />
+            <View style={{ flex: 1, marginLeft: SPACING.sm }}>
+              <Text style={styles.lockedTitle}>{t('chat.lockedTitle')}</Text>
+              <Text style={styles.lockedSub}>{t('chat.lockedSub', { name: displayName })}</Text>
+            </View>
+            <Text style={styles.lockedCta}>{t('chat.lockedCta')}</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Input bar */}
-        <View
-          style={[
-            styles.inputBar,
-            { paddingBottom: Math.max(insets.bottom, 6) + SPACING.sm },
-          ]}
-        >
+        <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, 6) + SPACING.sm }]}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, isLocked && styles.inputLocked]}
             value={inputText}
             onChangeText={setInputText}
-            placeholder="Type your message"
-            placeholderTextColor="rgba(255,255,255,0.33)"
+            placeholder={isLocked ? t('chat.lockedPlaceholder') : t('chat.placeholder')}
+            placeholderTextColor={isLocked ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.33)'}
             returnKeyType="send"
             onSubmitEditing={() => sendMessage()}
             blurOnSubmit={false}
+            editable={!isLocked}
+            onPressIn={isLocked ? triggerPaywall : undefined}
           />
           <TouchableOpacity
-            style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDim]}
-            onPress={() => sendMessage()}
+            style={[styles.sendBtn, (isLocked || !inputText.trim()) && styles.sendBtnDim]}
+            onPress={isLocked ? triggerPaywall : () => sendMessage()}
             activeOpacity={0.85}
           >
-            <Text style={styles.sendArrow}>▶</Text>
+            {isLocked
+              ? <Lock color="#fff" size={18} strokeWidth={2.5} />
+              : <Text style={styles.sendArrow}>▶</Text>
+            }
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
 
       {/* ── Incoming Call Modal ── */}
-      <Modal
-        visible={showCallModal}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-      >
+      <Modal visible={showCallModal} transparent animationType="fade" statusBarTranslucent>
         <CallModalContent
           character={character}
           displayName={displayName}
@@ -406,190 +439,111 @@ export default function ChatScreen() {
 
 // ── Chat Styles ───────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: COLORS.bgDeep,
-  },
-  // Header
+  root: { flex: 1, backgroundColor: COLORS.bgDeep },
+
   header: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical:   10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: SPACING.md, paddingVertical: 10,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
-  headerBack: {
-    width:           36,
-    height:          36,
-    alignItems:      'center',
-    justifyContent:  'center',
-  },
-  headerCenter: {
-    flex:       1,
-    flexDirection: 'row',
-    alignItems:    'center',
-    marginLeft:    SPACING.sm,
-  },
-  headerAvatar: {
-    width:        46,
-    height:       46,
-    borderRadius: 23,
-    borderWidth:  2,
-    borderColor:  COLORS.purple,
-  },
-  headerName: {
-    fontSize:   17,
-    fontWeight: '700',
-    color:      COLORS.textPrimary,
-  },
-  onlineRow: {
-    flexDirection: 'row',
-    alignItems:    'center',
-    marginTop:     2,
-    gap:           5,
-  },
-  onlineDot: {
-    width:        7,
-    height:       7,
-    borderRadius: 4,
-    backgroundColor: '#22c55e',
-  },
-  onlineText: {
-    fontSize:   11,
-    color:      '#22c55e',
-    fontWeight: '500',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems:    'center',
-    gap:           SPACING.sm,
-  },
+  headerBack: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: SPACING.sm },
+  headerAvatar: { width: 46, height: 46, borderRadius: 23, borderWidth: 2, borderColor: COLORS.purple },
+  headerName: { fontSize: 17, fontWeight: '700', color: COLORS.textPrimary },
+  onlineRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 5 },
+  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#22c55e' },
+  onlineText: { fontSize: 11, color: '#22c55e', fontWeight: '500' },
+
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   coinBadge: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    backgroundColor: '#1a1400',
-    borderRadius:    RADIUS.full,
-    paddingHorizontal: 10,
-    paddingVertical:    5,
-    gap:               4,
-    borderWidth:       1,
-    borderColor:       COLORS.gold,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#1a1400', borderRadius: RADIUS.full,
+    paddingHorizontal: 10, paddingVertical: 5, gap: 4,
+    borderWidth: 1, borderColor: COLORS.gold,
   },
+  coinBadgeLocked: { borderColor: COLORS.error, backgroundColor: '#1a0000' },
   coinStar: { fontSize: 11, color: COLORS.gold },
-  coinNum:  { fontSize: 13, fontWeight: '700', color: COLORS.gold },
+  coinNum: { fontSize: 13, fontWeight: '700', color: COLORS.gold },
+  coinNumLocked: { color: COLORS.error },
+
+  proBadge: {
+    backgroundColor: '#1a1400', borderRadius: RADIUS.full,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: COLORS.gold,
+  },
+  proBadgeText: { fontSize: 11, fontWeight: '700', color: COLORS.gold, letterSpacing: 1 },
+
   callHeaderBtn: {
-    width:           42,
-    height:          42,
-    borderRadius:    21,
-    backgroundColor: '#16a34a',
-    alignItems:      'center',
-    justifyContent:  'center',
+    width: 42, height: 42, borderRadius: 21,
+    backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center',
   },
-  // Messages
+
   messageList: {
-    paddingHorizontal: SPACING.md,
-    paddingTop:        SPACING.md,
-    paddingBottom:     SPACING.md,
-    flexGrow: 1,
+    paddingHorizontal: SPACING.md, paddingTop: SPACING.md,
+    paddingBottom: SPACING.md, flexGrow: 1,
   },
-  bubbleWrap: {
-    marginBottom: SPACING.sm,
-    maxWidth:     '86%',
-  },
+  bubbleWrap: { marginBottom: SPACING.sm, maxWidth: '86%' },
   bubbleLeft:  { alignSelf: 'flex-start' },
   bubbleRight: { alignSelf: 'flex-end' },
-  bubble: {
-    borderRadius:    RADIUS.lg,
-    paddingHorizontal: SPACING.md,
-    paddingVertical:   10,
-  },
-  userBubble: {
-    backgroundColor:   COLORS.purple,
-    borderTopRightRadius: 4,
-  },
+  bubble: { borderRadius: RADIUS.lg, paddingHorizontal: SPACING.md, paddingVertical: 10 },
+  userBubble: { backgroundColor: COLORS.purple, borderTopRightRadius: 4 },
   companionBubble: {
-    backgroundColor:  '#07070f',
-    borderWidth:      1,
-    borderColor:      'rgba(255,255,255,0.11)',
-    borderTopLeftRadius: 4,
+    backgroundColor: '#07070f', borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.11)', borderTopLeftRadius: 4,
   },
   bubbleText:     { fontSize: 15, color: COLORS.textPrimary, lineHeight: 22 },
   userBubbleText: { color: '#fff' },
-  // Examples tray
+
   examplesTray: {
-    borderTopWidth:  1,
-    borderTopColor:  COLORS.border,
-    backgroundColor: COLORS.bgSurface,
-    paddingTop:      SPACING.sm,
-    paddingBottom:   SPACING.sm,
+    borderTopWidth: 1, borderTopColor: COLORS.border,
+    backgroundColor: COLORS.bgSurface, paddingVertical: SPACING.sm,
   },
   examplesHeader: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.md,
-    marginBottom:      8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md, marginBottom: 8,
   },
-  examplesTitle: {
-    fontSize:   13,
-    fontWeight: '600',
-    color:      COLORS.textPrimary,
-  },
+  examplesTitle: { fontSize: 13, fontWeight: '600', color: COLORS.textPrimary },
   closeCircle: {
-    width:           22,
-    height:          22,
-    borderRadius:    11,
-    backgroundColor: COLORS.bgCard,
-    alignItems:      'center',
-    justifyContent:  'center',
+    width: 22, height: 22, borderRadius: 11,
+    backgroundColor: COLORS.bgCard, alignItems: 'center', justifyContent: 'center',
   },
-  examplesRow: {
-    paddingHorizontal: SPACING.md,
-    flexDirection:     'row',
-    alignItems:        'center',
-    gap:               8,
-  },
+  examplesRow: { paddingHorizontal: SPACING.md, flexDirection: 'row', alignItems: 'center', gap: 8 },
   exampleChip: {
-    backgroundColor: COLORS.bgCard,
-    borderRadius:    RADIUS.full,
-    paddingHorizontal: 14,
-    paddingVertical:   8,
-    borderWidth:       1,
-    borderColor:       COLORS.border,
+    backgroundColor: COLORS.bgCard, borderRadius: RADIUS.full,
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderWidth: 1, borderColor: COLORS.border,
   },
-  exampleChipText: {
-    fontSize:   13,
-    color:      COLORS.textSecondary,
-    fontWeight: '500',
+  exampleChipText: { fontSize: 13, color: COLORS.textSecondary, fontWeight: '500' },
+
+  // Locked banner
+  lockedBanner: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(212,175,55,0.08)',
+    borderTopWidth: 1, borderTopColor: 'rgba(212,175,55,0.25)',
+    paddingHorizontal: SPACING.md, paddingVertical: SPACING.md,
   },
-  // Input bar
+  lockedTitle: { fontSize: 13, fontWeight: '700', color: COLORS.textPrimary },
+  lockedSub:   { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
+  lockedCta:   { fontSize: 13, fontWeight: '700', color: COLORS.gold, marginLeft: SPACING.sm },
+
   inputBar: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    paddingHorizontal: SPACING.md,
-    paddingTop:        SPACING.sm,
-    gap:               SPACING.sm,
-    backgroundColor:   COLORS.bgSurface,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: SPACING.md, paddingTop: SPACING.sm,
+    gap: SPACING.sm, backgroundColor: COLORS.bgSurface,
   },
   input: {
-    flex:              1,
-    backgroundColor:   'rgba(255,255,255,0.07)',
-    borderRadius:      RADIUS.full,
-    paddingHorizontal: SPACING.md,
-    paddingVertical:   12,
-    color:             COLORS.textPrimary,
-    fontSize:          15,
-    borderWidth:       1,
-    borderColor:       COLORS.border,
+    flex: 1, backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: RADIUS.full, paddingHorizontal: SPACING.md,
+    paddingVertical: 12, color: COLORS.textPrimary, fontSize: 15,
+    borderWidth: 1, borderColor: COLORS.border,
+  },
+  inputLocked: {
+    borderColor: 'rgba(212,175,55,0.3)',
+    backgroundColor: 'rgba(212,175,55,0.04)',
   },
   sendBtn: {
-    width:           46,
-    height:          46,
-    borderRadius:    23,
-    backgroundColor: '#16a34a',
-    alignItems:      'center',
-    justifyContent:  'center',
+    width: 46, height: 46, borderRadius: 23,
+    backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center',
   },
   sendBtnDim: { opacity: 0.4 },
   sendArrow:  { color: '#fff', fontSize: 17, marginLeft: 2 },
@@ -598,60 +552,23 @@ const styles = StyleSheet.create({
 // ── Call Modal Styles ─────────────────────────────────────────────────────────
 const callStyles = StyleSheet.create({
   container: {
-    flex:            1,
-    backgroundColor: 'rgba(7,7,16,0.97)',
-    alignItems:      'center',
-    justifyContent:  'space-between',
+    flex: 1, backgroundColor: 'rgba(7,7,16,0.97)',
+    alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: SPACING.xl,
   },
-  incomingLabel: {
-    fontSize:      15,
-    color:         COLORS.textSecondary,
-    fontWeight:    '500',
-    letterSpacing: 0.4,
-  },
-  callAvatar: {
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.6)',
-  },
-  callerName: {
-    fontSize:   32,
-    fontWeight: '700',
-    color:      COLORS.textPrimary,
-    textAlign:  'center',
-  },
-  timerText: {
-    fontSize: 13,
-    color:    COLORS.textSecondary,
-  },
-  btnRow: {
-    flexDirection: 'row',
-    gap:           80,
-    alignItems:    'center',
-  },
-  btnWrap: {
-    alignItems: 'center',
-    gap:        SPACING.sm,
-  },
+  incomingLabel: { fontSize: 15, color: COLORS.textSecondary, fontWeight: '500', letterSpacing: 0.4 },
+  callAvatar:    { borderWidth: 3, borderColor: 'rgba(255,255,255,0.6)' },
+  callerName:    { fontSize: 32, fontWeight: '700', color: COLORS.textPrimary, textAlign: 'center' },
+  timerText:     { fontSize: 13, color: COLORS.textSecondary },
+  btnRow:        { flexDirection: 'row', gap: 80, alignItems: 'center' },
+  btnWrap:       { alignItems: 'center', gap: SPACING.sm },
   declineBtn: {
-    width:           72,
-    height:          72,
-    borderRadius:    36,
-    backgroundColor: '#dc2626',
-    alignItems:      'center',
-    justifyContent:  'center',
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: '#dc2626', alignItems: 'center', justifyContent: 'center',
   },
   acceptBtn: {
-    width:           72,
-    height:          72,
-    borderRadius:    36,
-    backgroundColor: '#16a34a',
-    alignItems:      'center',
-    justifyContent:  'center',
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center',
   },
-  btnLabel: {
-    fontSize:   13,
-    color:      COLORS.textPrimary,
-    fontWeight: '500',
-  },
+  btnLabel: { fontSize: 13, color: COLORS.textPrimary, fontWeight: '500' },
 });

@@ -35,7 +35,7 @@ export default function GatewayScreen() {
       afterSignIn();
     } catch (err) {
       if (err.message !== 'cancelled') {
-        Alert.alert('Sign-in failed', err.message ?? 'Something went wrong. Please try again.');
+        Alert.alert(t('auth.signInFailed'), err.message ?? t('common.error'));
       }
     } finally {
       setLoadingGoogle(false);
@@ -48,7 +48,7 @@ export default function GatewayScreen() {
       await anonymousSignIn();
       afterSignIn();
     } catch (err) {
-      Alert.alert('Sign-in failed', err.message ?? 'Something went wrong. Please try again.');
+      Alert.alert(t('auth.signInFailed'), err.message ?? t('common.error'));
     } finally {
       setLoadingAnon(false);
     }

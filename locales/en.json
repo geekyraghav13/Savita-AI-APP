@@ -1,12 +1,7 @@
 {
-  "app": {
-    "name": "SAVITA",
-    "tagline": "Your AI Companion"
-  },
+  "app": { "name": "SAVITA", "tagline": "Your AI Companion" },
   "onboarding": {
-    "skip": "Skip",
-    "next": "Next",
-    "getStarted": "Get Started",
+    "skip": "Skip", "next": "Next", "getStarted": "Get Started",
     "slides": [
       { "title": "Instant Responses", "body": "She's always here. Real conversations, anytime you need them." },
       { "title": "Voice Calls", "body": "Hear her voice. Feel the connection with live audio calls." },
@@ -14,19 +9,8 @@
       { "title": "Premium Companions", "body": "Unlock exclusive characters crafted for a premium experience." }
     ]
   },
-  "language": {
-    "title": "Choose Language",
-    "subtitle": "Select your preferred language",
-    "continue": "Continue"
-  },
-  "character": {
-    "title": "Choose Your Companion",
-    "subtitle": "Tap a character to begin",
-    "free": "Free",
-    "premium": "Premium",
-    "locked": "Premium Only",
-    "continue": "Continue"
-  },
+  "language": { "title": "Choose Language", "subtitle": "Select your preferred language", "continue": "Continue" },
+  "character": { "title": "Choose Your Companion", "subtitle": "Tap a character to begin", "free": "Free", "premium": "Premium", "locked": "Premium Only", "continue": "Continue" },
   "name": {
     "title": "What's her name?",
     "subtitle": "You can use her real name or give her a new one",
@@ -35,70 +19,97 @@
     "error": "Name must be at least 2 characters"
   },
   "hobbies": {
-    "title": "Her Hobbies",
-    "subtitle": "Select at least one",
-    "continue": "Continue",
+    "title": "Her Hobbies", "subtitle": "Select at least one", "continue": "Continue",
     "tags": ["Fitness", "Reading", "Gaming", "Cooking", "Traveling", "Music", "Art", "Sports", "Dancing", "Photography", "Yoga", "Movies"]
   },
   "interests": {
-    "title": "Her Interests",
-    "subtitle": "Select at least one",
-    "continue": "Continue",
+    "title": "Her Interests", "subtitle": "Select at least one", "continue": "Continue",
     "tags": ["Tech", "Anime", "Fashion", "Philosophy", "Pop Culture", "Movies", "Science", "History", "Food", "Nature", "Spirituality", "Business"]
   },
   "auth": {
     "title": "Save Your Companion",
     "subtitle": "Create an account to save your chat history and settings",
     "google": "Continue with Google",
-    "apple": "Continue with Apple",
     "guest": "Continue as Guest",
-    "note": "You can always link an account later"
-  },
-  "summary": {
-    "title": "Your Companion",
-    "name": "Name",
-    "hobbies": "Hobbies",
-    "interests": "Interests",
-    "startChat": "Start Chatting →"
+    "note": "You can always link an account later",
+    "signInFailed": "Sign-in failed"
   },
   "chat": {
-    "placeholder": "Message",
+    "openingMessage": "Hey {{name}}! 💕 I've been waiting for you. What's on your mind today?",
+    "online": "Online",
+    "placeholder": "Type your message",
+    "lockedPlaceholder": "Upgrade to continue...",
+    "exampleMessages": "Example messages",
+    "msgsLeft": "{{count}} left",
+    "limitBadge": "Limit",
     "typing": "is typing…",
-    "callButton": "Call",
-    "limitReached": "You've reached your free message limit",
-    "upgrade": "Upgrade to continue"
-  },
-  "call": {
-    "incoming": "Incoming Call",
-    "accept": "Accept",
-    "decline": "Decline"
-  },
-  "paywall": {
-    "title": "Go Premium",
-    "subtitle": "Unlimited chats, voice calls & more",
-    "weekly": "Weekly",
-    "monthly": "Monthly",
-    "yearly": "Yearly",
-    "bestValue": "Best Value",
-    "subscribe": "Subscribe Now",
-    "restore": "Restore Purchases",
-    "terms": "Terms & Privacy"
+    "lockedTitle": "You've used your 5 free messages",
+    "lockedSub": "Upgrade to keep chatting with {{name}} ✨",
+    "lockedCta": "Unlock →",
+    "callIncoming": "Incoming voice call",
+    "callAutoDismiss": "Auto-dismiss in {{count}}s",
+    "callAccept": "Accept",
+    "callDecline": "Decline",
+    "exampleList": ["Send photo {{name}}", "I'm so bored {{name}}", "Send a video {{name}}", "Tell me something 🔥", "Miss me?"]
   },
   "dashboard": {
-    "title": "My Companions",
-    "noCompanions": "No companions yet",
-    "newGirlfriend": "+ Select New Girlfriend",
-    "logout": "Log Out",
-    "settings": "Settings",
-    "subscription": "Subscription",
-    "lastMessage": "Last message"
+    "emptyText": "No conversations yet",
+    "emptySub": "Select a girlfriend to start chatting",
+    "selectNew": "Select New Girlfriend",
+    "openingMessage": "Hey {{name}}! 💕 I've been waiting for you. What's on your mind today?"
+  },
+  "settings": {
+    "title": "Settings",
+    "share": "Share SAVITA",
+    "rate": "Like us, Rate us ❤️",
+    "emailSupport": "Email Support",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "signOut": "Sign Out",
+    "signOutTitle": "Sign Out",
+    "signOutMessage": "Are you sure you want to sign out?",
+    "signOutConfirm": "Sign Out",
+    "deleteAccount": "Delete Account",
+    "deleteAccountTitle": "Delete Account",
+    "deleteAccountMessage": "This will permanently delete your account and all your data. This cannot be undone.",
+    "deleteAccountConfirm": "Delete Account",
+    "deleteAccountFailed": "Delete failed",
+    "deleteAccountReauth": "Please sign in again to delete your account.",
+    "deleteData": "Delete all data",
+    "deleteTitle": "Delete all data",
+    "deleteMessage": "This will sign you out and reset all conversations. This cannot be undone.",
+    "deleteCancel": "Cancel",
+    "deleteConfirm": "Delete"
+  },
+  "paywall": {
+    "eyebrow": "✦ UNLOCK PREMIUM",
+    "title": "Go deeper\nwith {{name}}",
+    "subtitle": "Unlimited messages • All companions\nVoice calls • No limits",
+    "tryFree": "Try it free",
+    "save90": "Save 90%  •  $0.57/week",
+    "payOnce": "Pay once, own forever",
+    "bestValue": "BEST VALUE",
+    "weekly": "Weekly",
+    "yearly": "Yearly",
+    "lifetime": "Lifetime",
+    "perWeek": "/ week",
+    "perYear": "/ year",
+    "oneTime": "one-time",
+    "cta": "Continue with {{plan}}",
+    "restore": "Restore purchases",
+    "legal": "Subscriptions auto-renew unless cancelled at least 24 hours before the renewal date. Manage in Google Play → Subscriptions.",
+    "notAvailable": "Not available",
+    "notAvailableMsg": "This plan is not available right now. Please try again.",
+    "purchaseFailed": "Purchase failed",
+    "restored": "Restored!",
+    "restoredMsg": "Your premium access has been restored.",
+    "noPurchase": "No purchase found",
+    "noPurchaseMsg": "No active subscription was found for this account.",
+    "restoreFailed": "Restore failed",
+    "ok": "OK"
   },
   "common": {
-    "back": "Back",
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "loading": "Loading…",
-    "error": "Something went wrong",
-    "retry": "Retry"
+    "back": "Back", "cancel": "Cancel", "confirm": "Confirm",
+    "loading": "Loading…", "error": "Something went wrong", "retry": "Retry"
   }
 }

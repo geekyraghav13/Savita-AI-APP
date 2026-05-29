@@ -12,24 +12,98 @@
   "language": { "title": "Chọn Ngôn Ngữ", "subtitle": "Chọn ngôn ngữ ưa thích của bạn", "continue": "Tiếp tục" },
   "character": { "title": "Chọn Bạn Đồng Hành", "subtitle": "Nhấn vào nhân vật để bắt đầu", "free": "Miễn phí", "premium": "Premium", "locked": "Chỉ Premium", "continue": "Tiếp tục" },
   "name": {
-    "title": "Tên cô ấy là gì?",
-    "subtitle": "Dùng tên thật hoặc đặt tên mới cho cô ấy",
-    "placeholder": "Nhập tên",
-    "continue": "Tiếp tục",
-    "error": "Tên phải có ít nhất 2 ký tự"
+    "title": "Tên cô ấy là gì?", "subtitle": "Dùng tên thật hoặc đặt tên mới cho cô ấy",
+    "placeholder": "Nhập tên", "continue": "Tiếp tục", "error": "Tên phải có ít nhất 2 ký tự"
   },
   "hobbies": {
-    "title": "Sở thích của cô ấy",
-    "subtitle": "Chọn ít nhất một",
-    "continue": "Tiếp tục",
+    "title": "Sở thích của cô ấy", "subtitle": "Chọn ít nhất một", "continue": "Tiếp tục",
     "tags": ["Thể dục", "Đọc sách", "Chơi game", "Nấu ăn", "Du lịch", "Âm nhạc", "Nghệ thuật", "Thể thao", "Khiêu vũ", "Nhiếp ảnh", "Yoga", "Phim"]
   },
   "interests": {
-    "title": "Mối quan tâm của cô ấy",
-    "subtitle": "Chọn ít nhất một",
-    "continue": "Tiếp tục",
+    "title": "Mối quan tâm của cô ấy", "subtitle": "Chọn ít nhất một", "continue": "Tiếp tục",
     "tags": ["Công nghệ", "Anime", "Thời trang", "Triết học", "Văn hóa đại chúng", "Phim", "Khoa học", "Lịch sử", "Ẩm thực", "Thiên nhiên", "Tâm linh", "Kinh doanh"]
   },
-  "auth": { "title": "Lưu Bạn Đồng Hành", "subtitle": "Tạo tài khoản để lưu lịch sử trò chuyện", "google": "Tiếp tục với Google", "apple": "Tiếp tục với Apple", "guest": "Tiếp tục với tư cách khách", "note": "Bạn có thể liên kết tài khoản sau" },
-  "common": { "back": "Quay lại", "cancel": "Hủy", "confirm": "Xác nhận", "loading": "Đang tải…", "error": "Đã có lỗi xảy ra", "retry": "Thử lại" }
+  "auth": {
+    "title": "Lưu Bạn Đồng Hành", "subtitle": "Tạo tài khoản để lưu lịch sử trò chuyện",
+    "google": "Tiếp tục với Google", "guest": "Tiếp tục với tư cách khách",
+    "note": "Bạn có thể liên kết tài khoản sau", "signInFailed": "Đăng nhập thất bại"
+  },
+  "chat": {
+    "openingMessage": "Này {{name}}! 💕 Mình đã chờ bạn. Hôm nay bạn đang nghĩ gì?",
+    "online": "Trực tuyến",
+    "placeholder": "Nhập tin nhắn",
+    "lockedPlaceholder": "Nâng cấp để tiếp tục...",
+    "exampleMessages": "Tin nhắn mẫu",
+    "msgsLeft": "Còn {{count}} tin",
+    "limitBadge": "Hết hạn",
+    "typing": "đang nhập…",
+    "lockedTitle": "Bạn đã dùng hết 5 tin nhắn miễn phí",
+    "lockedSub": "Nâng cấp để tiếp tục trò chuyện với {{name}} ✨",
+    "lockedCta": "Mở khóa →",
+    "callIncoming": "Cuộc gọi thoại đến",
+    "callAutoDismiss": "Đóng sau {{count}}s",
+    "callAccept": "Trả lời",
+    "callDecline": "Từ chối",
+    "exampleList": ["Gửi ảnh đi {{name}}", "Mình chán quá {{name}}", "Gửi video đi {{name}}", "Kể cho mình nghe 🔥", "Có nhớ mình không?"]
+  },
+  "dashboard": {
+    "emptyText": "Chưa có cuộc trò chuyện nào",
+    "emptySub": "Chọn người bạn gái để bắt đầu",
+    "selectNew": "Chọn Người Bạn Gái Mới",
+    "openingMessage": "Này {{name}}! 💕 Mình đã chờ bạn. Hôm nay bạn đang nghĩ gì?"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "share": "Chia sẻ SAVITA",
+    "rate": "Thích chúng mình? Đánh giá nhé ❤️",
+    "emailSupport": "Hỗ trợ qua Email",
+    "privacyPolicy": "Chính sách Bảo mật",
+    "termsOfService": "Điều khoản Dịch vụ",
+    "signOut": "Đăng xuất",
+    "signOutTitle": "Đăng xuất",
+    "signOutMessage": "Bạn có chắc muốn đăng xuất không?",
+    "signOutConfirm": "Đăng xuất",
+    "deleteAccount": "Xóa tài khoản",
+    "deleteAccountTitle": "Xóa tài khoản",
+    "deleteAccountMessage": "Thao tác này sẽ xóa vĩnh viễn tài khoản và toàn bộ dữ liệu của bạn. Không thể hoàn tác.",
+    "deleteAccountConfirm": "Xóa tài khoản",
+    "deleteAccountFailed": "Xóa thất bại",
+    "deleteAccountReauth": "Vui lòng đăng nhập lại để xóa tài khoản.",
+    "deleteData": "Xóa tất cả dữ liệu",
+    "deleteTitle": "Xóa tất cả dữ liệu",
+    "deleteMessage": "Điều này sẽ đăng xuất bạn và đặt lại tất cả cuộc trò chuyện. Không thể hoàn tác.",
+    "deleteCancel": "Hủy",
+    "deleteConfirm": "Xóa"
+  },
+  "paywall": {
+    "eyebrow": "✦ MỞ KHÓA PREMIUM",
+    "title": "Khám phá sâu hơn\nvới {{name}}",
+    "subtitle": "Tin nhắn không giới hạn • Tất cả bạn đồng hành\nGọi thoại • Không giới hạn",
+    "tryFree": "Dùng thử miễn phí",
+    "save90": "Tiết kiệm 90%  •  $0.57/tuần",
+    "payOnce": "Trả một lần, dùng mãi mãi",
+    "bestValue": "GIÁ TRỊ NHẤT",
+    "weekly": "Hàng tuần",
+    "yearly": "Hàng năm",
+    "lifetime": "Trọn đời",
+    "perWeek": "/ tuần",
+    "perYear": "/ năm",
+    "oneTime": "một lần",
+    "cta": "Tiếp tục với {{plan}}",
+    "restore": "Khôi phục giao dịch",
+    "legal": "Đăng ký tự động gia hạn trừ khi hủy trước ít nhất 24 giờ so với ngày gia hạn.",
+    "notAvailable": "Không khả dụng",
+    "notAvailableMsg": "Gói này hiện không khả dụng. Vui lòng thử lại.",
+    "purchaseFailed": "Mua hàng thất bại",
+    "restored": "Đã khôi phục!",
+    "restoredMsg": "Quyền truy cập premium của bạn đã được khôi phục.",
+    "noPurchase": "Không tìm thấy giao dịch",
+    "noPurchaseMsg": "Không tìm thấy đăng ký đang hoạt động cho tài khoản này.",
+    "restoreFailed": "Khôi phục thất bại",
+    "ok": "OK"
+  },
+  "common": {
+    "back": "Quay lại", "cancel": "Hủy", "confirm": "Xác nhận",
+    "loading": "Đang tải…", "error": "Đã có lỗi xảy ra", "retry": "Thử lại"
+  }
 }

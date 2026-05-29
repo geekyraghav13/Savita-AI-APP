@@ -33,6 +33,7 @@ secrets.js
 *.jks
 *.keystore
 SIGNING-KEY-INFO.txt
+android/keystore.properties
 
 # Editor / tooling
 .vscode/

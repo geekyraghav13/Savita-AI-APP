@@ -1,30 +1,32 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, RADIUS } from '../../constants/theme';
+import { COLORS } from '../../constants/theme';
+import { showPaywall, checkPremiumStatus } from '../../lib/revenuecat';
+import useAppStore from '../../store/useAppStore';
 
-// Placeholder — built properly on Day 8
+// All paywall entry points now call showPaywall() directly.
+// This screen exists as a safe fallback for any deep-link or legacy navigation.
 export default function PaywallScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const router       = useRouter();
+  const setIsPremium = useAppStore((s) => s.setIsPremium);
+
+  useEffect(() => {
+    (async () => {
+      const purchased = await showPaywall();
+      if (purchased) {
+        setIsPremium(true);
+      } else {
+        const still = await checkPremiumStatus();
+        setIsPremium(still);
+      }
+      router.back();
+    })();
+  }, []);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
-      <Text style={styles.step}>Day 8</Text>
-      <Text style={styles.title}>Unlock Premium</Text>
-      <Text style={styles.sub}>Full paywall builds here on Day 8</Text>
-      <TouchableOpacity style={styles.btn} onPress={() => router.back()} activeOpacity={0.85}>
-        <Text style={styles.btnText}>← Go Back</Text>
-      </TouchableOpacity>
+    <View style={{ flex: 1, backgroundColor: COLORS.bgDeep, alignItems: 'center', justifyContent: 'center' }}>
+      <ActivityIndicator color={COLORS.gold} size="large" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bgDeep, paddingHorizontal: SPACING.xl, justifyContent: 'center', alignItems: 'center', gap: SPACING.md },
-  step:  { fontSize: 12, color: COLORS.gold, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase' },
-  title: { fontSize: 32, fontWeight: 'bold', color: COLORS.textPrimary },
-  sub:   { fontSize: 14, color: COLORS.textSecondary, textAlign: 'center' },
-  btn:   { marginTop: SPACING.xl, backgroundColor: COLORS.purple, borderRadius: RADIUS.full, paddingVertical: 16, paddingHorizontal: 40 },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-});

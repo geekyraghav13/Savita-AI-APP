@@ -12,24 +12,98 @@
   "language": { "title": "Escolha o Idioma", "subtitle": "Selecione seu idioma preferido", "continue": "Continuar" },
   "character": { "title": "Escolha sua Companheira", "subtitle": "Toque em um personagem para começar", "free": "Grátis", "premium": "Premium", "locked": "Só Premium", "continue": "Continuar" },
   "name": {
-    "title": "Qual é o nome dela?",
-    "subtitle": "Use o nome real dela ou escolha um novo",
-    "placeholder": "Digite um nome",
-    "continue": "Continuar",
-    "error": "O nome deve ter pelo menos 2 caracteres"
+    "title": "Qual é o nome dela?", "subtitle": "Use o nome real dela ou escolha um novo",
+    "placeholder": "Digite um nome", "continue": "Continuar", "error": "O nome deve ter pelo menos 2 caracteres"
   },
   "hobbies": {
-    "title": "Passatempos dela",
-    "subtitle": "Selecione pelo menos um",
-    "continue": "Continuar",
+    "title": "Passatempos dela", "subtitle": "Selecione pelo menos um", "continue": "Continuar",
     "tags": ["Fitness", "Leitura", "Jogos", "Culinária", "Viagens", "Música", "Arte", "Esportes", "Dança", "Fotografia", "Yoga", "Filmes"]
   },
   "interests": {
-    "title": "Interesses dela",
-    "subtitle": "Selecione pelo menos um",
-    "continue": "Continuar",
+    "title": "Interesses dela", "subtitle": "Selecione pelo menos um", "continue": "Continuar",
     "tags": ["Tecnologia", "Anime", "Moda", "Filosofia", "Cultura Pop", "Filmes", "Ciência", "História", "Gastronomia", "Natureza", "Espiritualidade", "Negócios"]
   },
-  "auth": { "title": "Salvar Companheira", "subtitle": "Crie uma conta para salvar seu histórico de chat", "google": "Continuar com Google", "apple": "Continuar com Apple", "guest": "Continuar como Visitante", "note": "Você pode vincular uma conta depois" },
-  "common": { "back": "Voltar", "cancel": "Cancelar", "confirm": "Confirmar", "loading": "Carregando…", "error": "Algo deu errado", "retry": "Tentar novamente" }
+  "auth": {
+    "title": "Salvar Companheira", "subtitle": "Crie uma conta para salvar seu histórico de chat",
+    "google": "Continuar com Google", "guest": "Continuar como Visitante",
+    "note": "Você pode vincular uma conta depois", "signInFailed": "Falha no login"
+  },
+  "chat": {
+    "openingMessage": "Ei {{name}}! 💕 Estava esperando por você. O que está pensando hoje?",
+    "online": "Online",
+    "placeholder": "Digite sua mensagem",
+    "lockedPlaceholder": "Faça upgrade para continuar...",
+    "exampleMessages": "Mensagens de exemplo",
+    "msgsLeft": "{{count}} restantes",
+    "limitBadge": "Limite",
+    "typing": "está digitando…",
+    "lockedTitle": "Você usou suas 5 mensagens gratuitas",
+    "lockedSub": "Faça upgrade para continuar conversando com {{name}} ✨",
+    "lockedCta": "Desbloquear →",
+    "callIncoming": "Chamada de voz recebida",
+    "callAutoDismiss": "Fecha em {{count}}s",
+    "callAccept": "Aceitar",
+    "callDecline": "Recusar",
+    "exampleList": ["Manda foto {{name}}", "Estou entediado {{name}}", "Manda um vídeo {{name}}", "Me conta algo 🔥", "Sentiu minha falta?"]
+  },
+  "dashboard": {
+    "emptyText": "Nenhuma conversa ainda",
+    "emptySub": "Selecione uma namorada para começar a conversar",
+    "selectNew": "Selecionar Nova Namorada",
+    "openingMessage": "Ei {{name}}! 💕 Estava esperando por você. O que está pensando hoje?"
+  },
+  "settings": {
+    "title": "Configurações",
+    "share": "Compartilhar SAVITA",
+    "rate": "Gostou? Avalie-nos ❤️",
+    "emailSupport": "Suporte por Email",
+    "privacyPolicy": "Política de Privacidade",
+    "termsOfService": "Termos de Serviço",
+    "signOut": "Sair",
+    "signOutTitle": "Sair",
+    "signOutMessage": "Tem certeza que deseja sair?",
+    "signOutConfirm": "Sair",
+    "deleteAccount": "Excluir conta",
+    "deleteAccountTitle": "Excluir conta",
+    "deleteAccountMessage": "Isso vai excluir permanentemente sua conta e todos os dados. Esta ação não pode ser desfeita.",
+    "deleteAccountConfirm": "Excluir conta",
+    "deleteAccountFailed": "Exclusão falhou",
+    "deleteAccountReauth": "Por favor, faça login novamente para excluir sua conta.",
+    "deleteData": "Excluir todos os dados",
+    "deleteTitle": "Excluir todos os dados",
+    "deleteMessage": "Isso vai desconectar sua conta e apagar todas as conversas. Esta ação não pode ser desfeita.",
+    "deleteCancel": "Cancelar",
+    "deleteConfirm": "Excluir"
+  },
+  "paywall": {
+    "eyebrow": "✦ DESBLOQUEAR PREMIUM",
+    "title": "Vá mais fundo\ncom {{name}}",
+    "subtitle": "Mensagens ilimitadas • Todas as companheiras\nChamadas de voz • Sem limites",
+    "tryFree": "Experimente grátis",
+    "save90": "Economize 90%  •  $0,57/semana",
+    "payOnce": "Pague uma vez, tenha para sempre",
+    "bestValue": "MELHOR VALOR",
+    "weekly": "Semanal",
+    "yearly": "Anual",
+    "lifetime": "Vitalício",
+    "perWeek": "/ semana",
+    "perYear": "/ ano",
+    "oneTime": "único",
+    "cta": "Continuar com {{plan}}",
+    "restore": "Restaurar compras",
+    "legal": "As assinaturas são renovadas automaticamente, a menos que canceladas 24 horas antes da data de renovação.",
+    "notAvailable": "Não disponível",
+    "notAvailableMsg": "Este plano não está disponível agora. Tente novamente.",
+    "purchaseFailed": "Compra falhou",
+    "restored": "Restaurado!",
+    "restoredMsg": "Seu acesso premium foi restaurado.",
+    "noPurchase": "Nenhuma compra encontrada",
+    "noPurchaseMsg": "Nenhuma assinatura ativa foi encontrada para esta conta.",
+    "restoreFailed": "Falha na restauração",
+    "ok": "OK"
+  },
+  "common": {
+    "back": "Voltar", "cancel": "Cancelar", "confirm": "Confirmar",
+    "loading": "Carregando…", "error": "Algo deu errado", "retry": "Tentar novamente"
+  }
 }

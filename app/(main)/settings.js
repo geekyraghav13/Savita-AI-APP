@@ -1,69 +1,116 @@
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Share2, Star, Mail, Shield, FileText, Trash2 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { ChevronLeft, Share2, Star, Mail, Shield, FileText, Trash2, LogOut, UserX } from 'lucide-react-native';
 import useAppStore from '../../store/useAppStore';
+import { signOut, deleteAccount } from '../../lib/auth';
 import { SPACING, RADIUS } from '../../constants/theme';
 
 const CARD_BG  = '#1c1c1e';
 const TEXT_PRI = '#ffffff';
-const TEXT_SEC = 'rgba(255,255,255,0.45)';
 const RED      = '#ef4444';
+const ORANGE   = '#f97316';
 
-function SettingRow({ label, icon, onPress, destructive = false, rightSlot }) {
+function SettingRow({ label, icon, onPress, destructive = false, danger = false, disabled = false }) {
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.75}>
-      <View style={styles.rowLeft}>
-        <Text style={[styles.rowLabel, destructive && styles.rowLabelRed]}>{label}</Text>
-      </View>
-      {rightSlot ?? (icon ? (
-        <View style={styles.rowIcon}>
-          {icon}
-        </View>
-      ) : null)}
+    <TouchableOpacity
+      style={[styles.row, disabled && styles.rowDisabled]}
+      onPress={disabled ? undefined : onPress}
+      activeOpacity={0.75}
+    >
+      <Text style={[styles.rowLabel, destructive && styles.rowLabelRed, danger && styles.rowLabelOrange]}>
+        {label}
+      </Text>
+      {icon && <View style={styles.rowIcon}>{icon}</View>}
     </TouchableOpacity>
   );
 }
 
 export default function SettingsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const resetCharacterFlow = useAppStore((s) => s.resetCharacterFlow);
-  const setUser            = useAppStore((s) => s.setUser);
+  const [signingOut,      setSigningOut]      = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const handleShare = async () => {
     try {
-      await Share.share({
-        message: 'Meet SAVITA — your AI companion! Download now 💕',
-      });
+      await Share.share({ message: 'Meet SAVITA — your AI companion! Download now 💕' });
     } catch {}
   };
 
-  const handleEmail = () => {
-    Linking.openURL('mailto:support@savitaai.app?subject=Support%20Request');
-  };
-
-  const handlePrivacy = () => {
-    Linking.openURL('https://savitaai.app/privacy');
-  };
-
-  const handleTerms = () => {
-    Linking.openURL('https://savitaai.app/terms');
-  };
-
-  const handleDelete = () => {
+  const handleSignOut = () => {
     Alert.alert(
-      'Delete all data',
-      'This will sign you out and reset all conversations. This cannot be undone.',
+      t('settings.signOutTitle'),
+      t('settings.signOutMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('settings.signOutConfirm'),
           style: 'destructive',
-          onPress: () => {
-            resetCharacterFlow();
-            setUser(null);
+          onPress: async () => {
+            setSigningOut(true);
+            try {
+              await signOut();
+              router.replace('/(onboarding)/splash');
+            } catch (err) {
+              Alert.alert(t('common.error'), err.message ?? t('common.error'));
+            } finally {
+              setSigningOut(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t('settings.deleteAccountTitle'),
+      t('settings.deleteAccountMessage'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('settings.deleteAccountConfirm'),
+          style: 'destructive',
+          onPress: async () => {
+            setDeletingAccount(true);
+            try {
+              await deleteAccount();
+              router.replace('/(onboarding)/splash');
+            } catch (err) {
+              if (err.message === 'cancelled') {
+                setDeletingAccount(false);
+                return;
+              }
+              if (err.code === 'auth/requires-recent-login') {
+                Alert.alert(t('settings.deleteAccountFailed'), t('settings.deleteAccountReauth'));
+              } else {
+                Alert.alert(t('settings.deleteAccountFailed'), err.message ?? t('common.error'));
+              }
+            } finally {
+              setDeletingAccount(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteData = () => {
+    Alert.alert(
+      t('settings.deleteTitle'),
+      t('settings.deleteMessage'),
+      [
+        { text: t('settings.deleteCancel'), style: 'cancel' },
+        {
+          text: t('settings.deleteConfirm'),
+          style: 'destructive',
+          onPress: async () => {
+            await signOut();
             router.replace('/(onboarding)/splash');
           },
         },
@@ -84,64 +131,81 @@ export default function SettingsScreen() {
         >
           <ChevronLeft color={TEXT_PRI} size={26} strokeWidth={2.5} />
         </TouchableOpacity>
-        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.title}>{t('settings.title')}</Text>
       </View>
 
       {/* ── Settings list ── */}
       <View style={styles.list}>
 
-        {/* Share */}
         <View style={styles.card}>
           <SettingRow
-            label="Share SAVITA"
+            label={t('settings.share')}
             icon={<Share2 color={TEXT_PRI} size={18} strokeWidth={2} />}
             onPress={handleShare}
           />
         </View>
 
-        {/* Rate */}
         <View style={styles.card}>
           <SettingRow
-            label={'Like us, Rate us ❤️'}
+            label={t('settings.rate')}
             icon={<Star color={TEXT_PRI} size={18} strokeWidth={2} />}
             onPress={() => Linking.openURL('market://details?id=com.savita8284.app')}
           />
         </View>
 
-        {/* Email Support */}
         <View style={styles.card}>
           <SettingRow
-            label="Email Support"
+            label={t('settings.emailSupport')}
             icon={<Mail color={TEXT_PRI} size={18} strokeWidth={2} />}
-            onPress={handleEmail}
+            onPress={() => Linking.openURL('mailto:support@savitaai.app?subject=Support%20Request')}
           />
         </View>
 
-        {/* Privacy Policy */}
         <View style={styles.card}>
           <SettingRow
-            label="Privacy Policy"
+            label={t('settings.privacyPolicy')}
             icon={<Shield color={TEXT_PRI} size={18} strokeWidth={2} />}
-            onPress={handlePrivacy}
+            onPress={() => Linking.openURL('https://savitaai.app/privacy')}
           />
         </View>
 
-        {/* Terms of Service */}
         <View style={styles.card}>
           <SettingRow
-            label="Terms of Service"
+            label={t('settings.termsOfService')}
             icon={<FileText color={TEXT_PRI} size={18} strokeWidth={2} />}
-            onPress={handleTerms}
+            onPress={() => Linking.openURL('https://savitaai.app/terms')}
           />
         </View>
 
-        {/* Delete all data */}
+        {/* ── Sign Out ── */}
+        <View style={[styles.card, styles.cardOrange]}>
+          <SettingRow
+            label={signingOut ? t('common.loading') : t('settings.signOut')}
+            danger
+            disabled={signingOut || deletingAccount}
+            icon={<LogOut color={ORANGE} size={18} strokeWidth={2} />}
+            onPress={handleSignOut}
+          />
+        </View>
+
+        {/* ── Delete Account ── */}
         <View style={[styles.card, styles.cardRed]}>
           <SettingRow
-            label="Delete all data"
+            label={deletingAccount ? t('common.loading') : t('settings.deleteAccount')}
+            destructive
+            disabled={signingOut || deletingAccount}
+            icon={<UserX color={RED} size={18} strokeWidth={2} />}
+            onPress={handleDeleteAccount}
+          />
+        </View>
+
+        {/* ── Delete local data only ── */}
+        <View style={[styles.card, styles.cardRedDim]}>
+          <SettingRow
+            label={t('settings.deleteData')}
             destructive
             icon={<Trash2 color={RED} size={18} strokeWidth={2} />}
-            onPress={handleDelete}
+            onPress={handleDeleteData}
           />
         </View>
 
@@ -151,65 +215,25 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex:            1,
-    backgroundColor: '#000000',
-  },
-  // Header
+  root: { flex: 1, backgroundColor: '#000000' },
   header: {
-    flexDirection: 'row',
-    alignItems:    'center',
-    paddingHorizontal: SPACING.xl,
-    paddingVertical:   SPACING.md,
-    gap:               SPACING.md,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md, gap: SPACING.md,
   },
-  backBtn: {
-    width:          36,
-    height:         36,
-    alignItems:     'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize:   22,
-    fontWeight: '700',
-    color:      TEXT_PRI,
-  },
-  // List
-  list: {
-    paddingHorizontal: SPACING.xl,
-    paddingTop:        SPACING.md,
-    gap:               SPACING.sm,
-  },
-  // Card
-  card: {
-    backgroundColor: CARD_BG,
-    borderRadius:    RADIUS.md,
-    overflow:        'hidden',
-  },
-  cardRed: {
-    borderWidth:  1,
-    borderColor:  'rgba(239,68,68,0.25)',
-  },
-  // Row
+  backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 22, fontWeight: '700', color: TEXT_PRI },
+  list: { paddingHorizontal: SPACING.xl, paddingTop: SPACING.md, gap: SPACING.sm },
+  card: { backgroundColor: CARD_BG, borderRadius: RADIUS.md, overflow: 'hidden' },
+  cardOrange: { borderWidth: 1, borderColor: 'rgba(249,115,22,0.3)' },
+  cardRed:    { borderWidth: 1, borderColor: 'rgba(239,68,68,0.4)' },
+  cardRedDim: { borderWidth: 1, borderColor: 'rgba(239,68,68,0.15)' },
   row: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    justifyContent:    'space-between',
-    paddingHorizontal: SPACING.md,
-    paddingVertical:   18,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md, paddingVertical: 18,
   },
-  rowLeft: {
-    flex: 1,
-  },
-  rowLabel: {
-    fontSize:   16,
-    fontWeight: '600',
-    color:      TEXT_PRI,
-  },
-  rowLabelRed: {
-    color: RED,
-  },
-  rowIcon: {
-    marginLeft: SPACING.sm,
-  },
+  rowDisabled: { opacity: 0.4 },
+  rowLabel:       { flex: 1, fontSize: 16, fontWeight: '600', color: TEXT_PRI },
+  rowLabelRed:    { color: RED },
+  rowLabelOrange: { color: ORANGE },
+  rowIcon: { marginLeft: SPACING.sm },
 });
