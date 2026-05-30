@@ -157,7 +157,7 @@ export default function SettingsScreen() {
           <SettingRow
             label={t('settings.emailSupport')}
             icon={<Mail color={TEXT_PRI} size={18} strokeWidth={2} />}
-            onPress={() => Linking.openURL('mailto:support@savitaai.app?subject=Support%20Request')}
+            onPress={() => Linking.openURL('mailto:helpjalpat@gmail.com?subject=Support%20Request')}
           />
         </View>
 
@@ -165,7 +165,7 @@ export default function SettingsScreen() {
           <SettingRow
             label={t('settings.privacyPolicy')}
             icon={<Shield color={TEXT_PRI} size={18} strokeWidth={2} />}
-            onPress={() => Linking.openURL('https://savitaai.app/privacy')}
+            onPress={() => Linking.openURL('https://savita-policy-pal.lovable.app/privacy-policy')}
           />
         </View>
 
@@ -173,7 +173,7 @@ export default function SettingsScreen() {
           <SettingRow
             label={t('settings.termsOfService')}
             icon={<FileText color={TEXT_PRI} size={18} strokeWidth={2} />}
-            onPress={() => Linking.openURL('https://savitaai.app/terms')}
+            onPress={() => Linking.openURL('https://savita-policy-pal.lovable.app/terms-of-use')}
           />
         </View>
 
