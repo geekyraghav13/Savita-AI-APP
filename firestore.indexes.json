@@ -1,0 +1,26 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "nextNotifyAt", "order": "ASCENDING" },
+        { "fieldPath": "notifyCount",  "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "users",
+      "fieldPath": "expireAt",
+      "indexes": [],
+      "ttlConfig": {}
+    },
+    {
+      "collectionGroup": "conversations",
+      "fieldPath": "expireAt",
+      "indexes": [],
+      "ttlConfig": {}
+    }
+  ]
+}

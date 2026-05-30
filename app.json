@@ -2,7 +2,7 @@
   "expo": {
     "name": "SAVITA ai",
     "slug": "savita-ai",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "savitaai",
@@ -26,7 +26,7 @@
         "backgroundColor": "#1a1a2e"
       },
       "package": "com.savita8284.app",
-      "versionCode": 5
+      "versionCode": 6
     },
     "web": {
       "bundler": "metro",
@@ -34,7 +34,15 @@
     },
     "plugins": [
       "expo-router",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/savita-logo.png",
+          "color": "#7c3aed",
+          "sounds": []
+        }
+      ]
     ]
   }
 }
