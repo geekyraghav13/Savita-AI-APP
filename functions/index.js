@@ -20,7 +20,7 @@ function getGeminiKey() {
 }
 
 const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 // ── Internal: call Gemini and parse 3 notifications ──────────────────────────
 async function callGemini(apiKey, characterName, lastMessages, userName) {
@@ -53,7 +53,7 @@ Return ONLY valid JSON, no markdown:
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.8, maxOutputTokens: 300 },
+      generationConfig: { temperature: 0.9, maxOutputTokens: 400, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
 
