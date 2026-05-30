@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
   TextInput, KeyboardAvoidingView, Platform, ScrollView,
-  Animated, Modal, Image, BackHandler,
+  Animated, Modal, Image, BackHandler, Linking, Pressable,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, Phone, PhoneOff, Lock } from 'lucide-react-native';
+import { ChevronLeft, Phone, PhoneOff, Lock, MoreVertical, Trash2, Flag, Pencil, Star } from 'lucide-react-native';
 import useAppStore from '../../../store/useAppStore';
 import { CHARACTERS } from '../../../constants/characters';
 import { COLORS, SPACING, RADIUS } from '../../../constants/theme';
@@ -18,6 +18,7 @@ import {
   touchConversation,
   loadMessages,
   onUserMessageSent,
+  clearConversation,
   saveLastMessages,
 } from '../../../lib/firestore';
 import { generateRetentionNotifications } from '../../../lib/gemini';
@@ -151,6 +152,7 @@ export default function ChatScreen() {
   const isPremium             = useAppStore((s) => s.isPremium);
   const setIsPremium          = useAppStore((s) => s.setIsPremium);
   const incrementMessageCount = useAppStore((s) => s.incrementMessageCount);
+  const setCustomName         = useAppStore((s) => s.setCustomName);
 
   const character   = CHARACTERS.find((c) => c.id === id) ?? selectedCharacter;
   const displayName = customName?.trim() || character?.name || 'Companion';
@@ -164,6 +166,9 @@ export default function ChatScreen() {
   const [lifetimeMsgs,   setLifetimeMsgs]  = useState(0);
   const [paywallLoading, setPaywallLoading] = useState(false);
   const [historyLoaded,  setHistoryLoaded] = useState(false);
+  const [showMenu,       setShowMenu]      = useState(false);
+  const [showRename,     setShowRename]    = useState(false);
+  const [renameText,     setRenameText]    = useState('');
 
   const flatListRef    = useRef(null);
   const callTimerRef   = useRef(null);
@@ -314,6 +319,40 @@ export default function ChatScreen() {
     [inputText, incrementMessageCount, isPremium, lifetimeMsgs, triggerPaywall, user, id, character, displayName, userName]
   );
 
+  // ── 3-dot menu actions ────────────────────────────────────────────────────
+  const handleClearChat = useCallback(() => {
+    setShowMenu(false);
+    const opening = { id: 'open', role: 'companion', text: t('chat.openingMessage', { name: userName }) };
+    setMessages([opening]);
+    setShowExamples(true);
+    lastMsgsWindow.current = [];
+    if (user?.uid) clearConversation(user.uid, id);
+  }, [user, id, userName, t]);
+
+  const handleReport = useCallback(() => {
+    setShowMenu(false);
+    const body = [
+      `User ID: ${user?.uid ?? 'unknown'}`,
+      `Character: ${displayName} (${id})`,
+      `Last messages:\n${lastMsgsWindow.current.map((m, i) => `${i + 1}. ${m}`).join('\n')}`,
+    ].join('\n\n');
+    Linking.openURL(
+      `mailto:geekyraghav13@gmail.com?subject=Report: Chat with ${displayName}&body=${encodeURIComponent(body)}`
+    );
+  }, [user, id, displayName]);
+
+  const handleRenameSave = useCallback(() => {
+    const trimmed = renameText.trim();
+    if (trimmed) setCustomName(trimmed);
+    setShowRename(false);
+    setRenameText('');
+  }, [renameText, setCustomName]);
+
+  const handleUpgradePro = useCallback(() => {
+    setShowMenu(false);
+    setTimeout(() => triggerPaywall(), 200);
+  }, [triggerPaywall]);
+
   // ── Call outcomes ─────────────────────────────────────────────────────────
   const handleAccept  = useCallback(() => { setShowCallModal(false); setTimeout(() => triggerPaywall(), 300); }, [triggerPaywall]);
   const handleDecline = useCallback(() => { setShowCallModal(false); setTimeout(() => triggerPaywall(), 300); }, [triggerPaywall]);
@@ -378,6 +417,13 @@ export default function ChatScreen() {
             activeOpacity={0.85}
           >
             <Phone color="#fff" size={20} strokeWidth={2} fill="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setShowMenu(true)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <MoreVertical color={COLORS.textPrimary} size={22} strokeWidth={2} />
           </TouchableOpacity>
         </View>
       </View>
@@ -485,6 +531,98 @@ export default function ChatScreen() {
           onAccept={handleAccept}
           onDecline={handleDecline}
         />
+      </Modal>
+
+      {/* ── 3-dot Bottom Sheet Menu ── */}
+      <Modal visible={showMenu} transparent animationType="slide" statusBarTranslucent onRequestClose={() => setShowMenu(false)}>
+        <Pressable style={menuStyles.overlay} onPress={() => setShowMenu(false)}>
+          <Pressable style={menuStyles.sheet} onPress={() => {}}>
+            <View style={menuStyles.handle} />
+            <Text style={menuStyles.sheetTitle}>{displayName}</Text>
+
+            <TouchableOpacity style={menuStyles.item} onPress={handleClearChat} activeOpacity={0.75}>
+              <View style={[menuStyles.itemIcon, { backgroundColor: 'rgba(239,68,68,0.12)' }]}>
+                <Trash2 color="#ef4444" size={18} strokeWidth={2} />
+              </View>
+              <View style={menuStyles.itemText}>
+                <Text style={menuStyles.itemLabel}>Clear Conversation</Text>
+                <Text style={menuStyles.itemSub}>Delete all messages in this chat</Text>
+              </View>
+            </TouchableOpacity>
+
+            <View style={menuStyles.divider} />
+
+            <TouchableOpacity style={menuStyles.item} onPress={() => { setShowMenu(false); setRenameText(customName?.trim() || character?.name || ''); setShowRename(true); }} activeOpacity={0.75}>
+              <View style={[menuStyles.itemIcon, { backgroundColor: 'rgba(59,130,246,0.12)' }]}>
+                <Pencil color="#3b82f6" size={18} strokeWidth={2} />
+              </View>
+              <View style={menuStyles.itemText}>
+                <Text style={menuStyles.itemLabel}>Change Name</Text>
+                <Text style={menuStyles.itemSub}>Currently: {customName?.trim() || character?.name}</Text>
+              </View>
+            </TouchableOpacity>
+
+            <View style={menuStyles.divider} />
+
+            <TouchableOpacity style={menuStyles.item} onPress={handleReport} activeOpacity={0.75}>
+              <View style={[menuStyles.itemIcon, { backgroundColor: 'rgba(249,115,22,0.12)' }]}>
+                <Flag color="#f97316" size={18} strokeWidth={2} />
+              </View>
+              <View style={menuStyles.itemText}>
+                <Text style={menuStyles.itemLabel}>Report Conversation</Text>
+                <Text style={menuStyles.itemSub}>Send report to support team</Text>
+              </View>
+            </TouchableOpacity>
+
+            {!isPremium && (
+              <>
+                <View style={menuStyles.divider} />
+                <TouchableOpacity style={menuStyles.item} onPress={handleUpgradePro} activeOpacity={0.75}>
+                  <View style={[menuStyles.itemIcon, { backgroundColor: 'rgba(212,175,55,0.12)' }]}>
+                    <Star color={COLORS.gold} size={18} strokeWidth={2} fill={COLORS.gold} />
+                  </View>
+                  <View style={menuStyles.itemText}>
+                    <Text style={[menuStyles.itemLabel, { color: COLORS.gold }]}>Upgrade to PRO</Text>
+                    <Text style={menuStyles.itemSub}>Unlimited messages + exclusive features</Text>
+                  </View>
+                </TouchableOpacity>
+              </>
+            )}
+
+            <TouchableOpacity style={menuStyles.cancel} onPress={() => setShowMenu(false)} activeOpacity={0.75}>
+              <Text style={menuStyles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* ── Rename Modal ── */}
+      <Modal visible={showRename} transparent animationType="fade" statusBarTranslucent onRequestClose={() => setShowRename(false)}>
+        <Pressable style={menuStyles.overlay} onPress={() => setShowRename(false)}>
+          <Pressable style={menuStyles.renameCard} onPress={() => {}}>
+            <Text style={menuStyles.renameTitle}>Change Name</Text>
+            <Text style={menuStyles.renameSub}>Give {character?.name} a personal nickname</Text>
+            <TextInput
+              style={menuStyles.renameInput}
+              value={renameText}
+              onChangeText={setRenameText}
+              placeholder={character?.name}
+              placeholderTextColor="rgba(255,255,255,0.25)"
+              autoFocus
+              maxLength={24}
+              returnKeyType="done"
+              onSubmitEditing={handleRenameSave}
+            />
+            <View style={menuStyles.renameBtns}>
+              <TouchableOpacity style={menuStyles.renameCancelBtn} onPress={() => setShowRename(false)} activeOpacity={0.75}>
+                <Text style={menuStyles.renameCancelTxt}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={menuStyles.renameSaveBtn} onPress={handleRenameSave} activeOpacity={0.85}>
+                <Text style={menuStyles.renameSaveTxt}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
       </Modal>
 
     </View>
@@ -624,4 +762,73 @@ const callStyles = StyleSheet.create({
     backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center',
   },
   btnLabel: { fontSize: 13, color: COLORS.textPrimary, fontWeight: '500' },
+});
+
+// ── Menu & Rename Styles ──────────────────────────────────────────────────────
+const menuStyles = StyleSheet.create({
+  overlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: '#111120',
+    borderTopLeftRadius: 22, borderTopRightRadius: 22,
+    paddingBottom: 32, paddingTop: 12,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+  },
+  handle: {
+    width: 38, height: 4, borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignSelf: 'center', marginBottom: 16,
+  },
+  sheetTitle: {
+    fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.35)',
+    textAlign: 'center', letterSpacing: 0.5, marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  item: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 20, paddingVertical: 14, gap: 14,
+  },
+  itemIcon: {
+    width: 40, height: 40, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  itemText: { flex: 1 },
+  itemLabel: { fontSize: 15, fontWeight: '600', color: '#ffffff', marginBottom: 2 },
+  itemSub:   { fontSize: 12, color: 'rgba(255,255,255,0.4)' },
+  divider:   { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginHorizontal: 20 },
+  cancel: {
+    marginHorizontal: 20, marginTop: 12,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+  },
+  cancelText: { fontSize: 15, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
+
+  // Rename modal
+  renameCard: {
+    backgroundColor: '#111120',
+    borderRadius: 20, margin: 24, padding: 24,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  renameTitle: { fontSize: 18, fontWeight: '800', color: '#ffffff', marginBottom: 6 },
+  renameSub:   { fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 20 },
+  renameInput: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+    color: '#ffffff', fontSize: 16,
+    borderWidth: 1, borderColor: 'rgba(124,58,237,0.4)',
+    marginBottom: 20,
+  },
+  renameBtns:      { flexDirection: 'row', gap: 12 },
+  renameCancelBtn: {
+    flex: 1, paddingVertical: 14, borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.07)', alignItems: 'center',
+  },
+  renameCancelTxt: { fontSize: 15, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
+  renameSaveBtn: {
+    flex: 1, paddingVertical: 14, borderRadius: 12,
+    backgroundColor: '#7c3aed', alignItems: 'center',
+  },
+  renameSaveTxt: { fontSize: 15, fontWeight: '700', color: '#ffffff' },
 });
