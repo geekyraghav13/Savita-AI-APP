@@ -1,8 +1,9 @@
 // Copy this file to `secrets.js` and fill in your real values.
 // `secrets.js` is gitignored and never committed.
 
-// Gemini — free API key from https://aistudio.google.com/app/apikey
-export const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY';
+// NOTE: Gemini API key is stored in Firebase Secret Manager (backend only).
+// Run: firebase functions:secrets:set GEMINI_API_KEY
+// It is NOT needed in this file — the app never touches it.
 
 export const OPENROUTER_API_KEY = 'sk-or-v1-PUT-YOUR-OPENROUTER-KEY-HERE';
 
