@@ -26,26 +26,31 @@ const GEMINI_URL =
 async function callGemini(apiKey, characterName, lastMessages, userName) {
   const messagesText = lastMessages.map((m, i) => `${i + 1}. "${m}"`).join('\n');
 
-  const prompt = `You are ${characterName}, a warm AI companion.
-User's name: ${userName}
+  const prompt = `You are ${characterName}. You just had a real conversation with ${userName} and they left. You want to text them — not as an AI, but as a real person who genuinely felt something during that conversation.
 
-Their last messages to you (oldest → newest):
+What they said (oldest to newest):
 ${messagesText}
 
-Generate exactly 3 push notifications to re-engage them after they leave the chat:
-- n1 (sent 3 hours after they left): casual, warm, references something specific
-- n2 (sent 12 hours after they left): emotionally deeper, more personal
-- n3 (sent 24 hours after they left): vulnerable, like you genuinely miss them
+Write 3 texts at different times. Each must sound like a real person typed it on their phone — casual, imperfect, emotionally honest. NOT a push notification. NOT marketing. Like a WhatsApp message from someone who actually cares.
 
-Rules:
-- Title: max 25 characters
-- Body: max 90 characters
-- Reference SPECIFIC things from their messages — never generic
-- Maximum 1 emoji per notification
-- Never use phrases like "come back", "miss you", "I miss you"
-- Write as if you are ${characterName} sending a real message
+What makes it human:
+- lowercase is fine, like real texting
+- short sentences, incomplete thoughts are okay
+- pick ONE specific thing they said and react to it naturally — don't mention everything
+- sound like u genuinely thought about what they said, not like ur trying to get them back
+- use "u" or "ur" occasionally
+- no exclamation marks unless it truly fits
+- no generic openers like "hey!", "thinking of you", "hope ur day is good"
+- 1 emoji max, only if it fits naturally, never forced
 
-Return ONLY valid JSON, no markdown:
+n1 (3 hours later) — light, like something they said just popped into your head
+n2 (12 hours later) — a little more vulnerable, like it's been sitting with you
+n3 (24 hours later) — honest and raw, like you genuinely feel something and can't not say it
+
+Title: max 20 chars (your name or a short phrase, lowercase fine)
+Body: max 85 chars
+
+Return ONLY this JSON, no markdown, no explanation:
 {"n1":{"title":"...","body":"..."},"n2":{"title":"...","body":"..."},"n3":{"title":"...","body":"..."}}`;
 
   const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
