@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAVITA ai — Live Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #06060f;
+      --bg2:       #0d0d1e;
+      --bg3:       #13132b;
+      --border:    rgba(255,255,255,0.07);
+      --purple:    #7c3aed;
+      --purple2:   #9d4edd;
+      --gold:      #d4af37;
+      --green:     #22c55e;
+      --red:       #ef4444;
+      --orange:    #f97316;
+      --blue:      #3b82f6;
+      --text:      #f1f0ff;
+      --muted:     rgba(255,255,255,0.45);
+      --radius:    14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Login Screen ─────────────────────────────────────────── */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 24px;
+    }
+    .login-logo { font-size: 48px; font-weight: 900; letter-spacing: 8px;
+      background: linear-gradient(135deg, #ff6bca, #c44dff, #7c3aed);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .login-sub { color: var(--muted); font-size: 15px; }
+    .login-btn {
+      display: flex; align-items: center; gap: 12px;
+      background: #fff; color: #111; border: none;
+      padding: 14px 28px; border-radius: 999px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: opacity .2s;
+    }
+    .login-btn:hover { opacity: .88; }
+    .login-btn svg { width: 20px; height: 20px; }
+    .login-note { color: var(--muted); font-size: 12px; }
+    #unauth-msg { color: var(--red); font-size: 14px; display: none; }
+
+    /* ── Main Dashboard ───────────────────────────────────────── */
+    #dashboard { display: none; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .topbar-logo { font-size: 20px; font-weight: 900; letter-spacing: 4px;
+      background: linear-gradient(135deg, #ff6bca, #9d4edd);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .topbar-badge {
+      background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+      color: var(--green); font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 999px; letter-spacing: .5px;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+    .last-updated { font-size: 12px; color: var(--muted); }
+    .refresh-btn {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); padding: 7px 16px; border-radius: 8px;
+      font-size: 13px; cursor: pointer; transition: background .2s;
+    }
+    .refresh-btn:hover { background: var(--purple); border-color: var(--purple); }
+    .signout-btn {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 7px 14px; border-radius: 8px;
+      font-size: 12px; cursor: pointer;
+    }
+    .signout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    .main { padding: 28px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Section titles ───────────────────────────────────────── */
+    .section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 14px;
+    }
+
+    /* ── KPI Cards ────────────────────────────────────────────── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .card:hover { border-color: rgba(124,58,237,0.4); }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent, var(--purple));
+    }
+    .card-label { font-size: 11px; color: var(--muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
+    .card-value { font-size: 36px; font-weight: 800; line-height: 1;
+      color: var(--text); margin-bottom: 6px; }
+    .card-sub { font-size: 12px; color: var(--muted); }
+    .card-icon { position: absolute; top: 18px; right: 18px;
+      font-size: 22px; opacity: .25; }
+
+    /* ── Two column layout ────────────────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    @media (max-width: 1100px) { .three-col { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 700px)  { .three-col { grid-template-columns: 1fr; } }
+
+    /* ── Chart panels ─────────────────────────────────────────── */
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+    .panel-title { font-size: 13px; font-weight: 700; color: var(--text);
+      margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+    .panel-title span { font-size: 16px; }
+    .chart-wrap { position: relative; height: 220px; }
+
+    /* ── Funnel bars ──────────────────────────────────────────── */
+    .funnel { display: flex; flex-direction: column; gap: 12px; }
+    .funnel-row { display: flex; align-items: center; gap: 12px; }
+    .funnel-label { font-size: 12px; color: var(--muted); width: 100px; flex-shrink: 0; }
+    .funnel-bar-wrap { flex: 1; background: rgba(255,255,255,0.06); border-radius: 6px; height: 28px; overflow: hidden; }
+    .funnel-bar { height: 100%; border-radius: 6px; display: flex; align-items: center;
+      padding: 0 10px; font-size: 12px; font-weight: 700; color: #fff;
+      transition: width .8s cubic-bezier(.4,0,.2,1); min-width: 36px; }
+    .funnel-count { font-size: 13px; font-weight: 700; width: 50px; text-align: right; }
+
+    /* ── Character list ───────────────────────────────────────── */
+    .char-list { display: flex; flex-direction: column; gap: 10px; }
+    .char-row { display: flex; align-items: center; gap: 12px; }
+    .char-name { font-size: 13px; font-weight: 600; color: var(--text); width: 80px; text-transform: capitalize; }
+    .char-bar-wrap { flex: 1; background: rgba(255,255,255,0.06); border-radius: 6px; height: 22px; overflow: hidden; }
+    .char-bar { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple2));
+      border-radius: 6px; display: flex; align-items: center; padding: 0 8px;
+      font-size: 11px; font-weight: 700; color: #fff; min-width: 28px;
+      transition: width .8s cubic-bezier(.4,0,.2,1); }
+    .char-count { font-size: 12px; font-weight: 700; color: var(--muted); width: 36px; text-align: right; }
+
+    /* ── Recent users table ───────────────────────────────────── */
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table th { font-size: 10px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .8px;
+      padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    .user-table td { font-size: 13px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .user-table tr:last-child td { border-bottom: none; }
+    .user-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .badge {
+      font-size: 10px; font-weight: 700; padding: 2px 8px;
+      border-radius: 999px; letter-spacing: .4px;
+    }
+    .badge-green { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-orange { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+    .badge-red    { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-purple { background: rgba(124,58,237,0.15); color: var(--purple2); border: 1px solid rgba(124,58,237,0.3); }
+    .badge-muted  { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── Progress ring ────────────────────────────────────────── */
+    .stat-row { display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-size: 13px; color: var(--muted); }
+    .stat-value { font-size: 15px; font-weight: 700; color: var(--text); }
+
+    /* ── Loading skeleton ─────────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%,
+        rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px; height: 36px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ── Pulse dot ────────────────────────────────────────────── */
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+    .pulse-dot { width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green); animation: pulse 2s infinite; display: inline-block; }
+
+    .mb-28 { margin-bottom: 28px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Login Screen ─────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-logo">SAVITA</div>
+  <div class="login-sub">Analytics Dashboard — Admin Only</div>
+  <button class="login-btn" id="google-signin-btn">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    Sign in with Google
+  </button>
+  <div id="unauth-msg">⛔ Access denied — admin only</div>
+  <div class="login-note">Only raghavsharma8284@gmail.com can access this dashboard</div>
+</div>
+
+<!-- ── Main Dashboard ───────────────────────────────────────── -->
+<div id="dashboard">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">SAVITA ai</div>
+      <div class="topbar-badge"><span class="pulse-dot"></span> &nbsp;LIVE</div>
+    </div>
+    <div class="topbar-right">
+      <div class="last-updated" id="last-updated">Loading...</div>
+      <button class="refresh-btn" id="refresh-btn">↻ Refresh</button>
+      <button class="signout-btn" id="signout-btn">Sign out</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ── KPI Cards ──────────────────────────────────────────── -->
+    <div class="section-title">User Metrics</div>
+    <div class="cards-grid mb-28">
+      <div class="card" style="--accent:#7c3aed">
+        <div class="card-icon">👥</div>
+        <div class="card-label">Total Users</div>
+        <div class="card-value" id="c-total">—</div>
+        <div class="card-sub">All registered accounts</div>
+      </div>
+      <div class="card" style="--accent:#22c55e">
+        <div class="card-icon">📱</div>
+        <div class="card-label">Active Today</div>
+        <div class="card-value" id="c-dau">—</div>
+        <div class="card-sub">Daily Active Users</div>
+      </div>
+      <div class="card" style="--accent:#3b82f6">
+        <div class="card-icon">📅</div>
+        <div class="card-label">Active 7 Days</div>
+        <div class="card-value" id="c-wau">—</div>
+        <div class="card-sub">Weekly Active Users</div>
+      </div>
+      <div class="card" style="--accent:#a855f7">
+        <div class="card-icon">🗓️</div>
+        <div class="card-label">Active 30 Days</div>
+        <div class="card-value" id="c-mau">—</div>
+        <div class="card-sub">Monthly Active Users</div>
+      </div>
+      <div class="card" style="--accent:#d4af37">
+        <div class="card-icon">💬</div>
+        <div class="card-label">Chatted Today</div>
+        <div class="card-value" id="c-chat-today">—</div>
+        <div class="card-sub">Sent a message today</div>
+      </div>
+      <div class="card" style="--accent:#f97316">
+        <div class="card-icon">🔔</div>
+        <div class="card-label">Push Enabled</div>
+        <div class="card-value" id="c-push">—</div>
+        <div class="card-sub" id="c-push-pct">of total users</div>
+      </div>
+      <div class="card" style="--accent:#ef4444">
+        <div class="card-icon">⏳</div>
+        <div class="card-label">Expiring Soon</div>
+        <div class="card-value" id="c-expiring">—</div>
+        <div class="card-sub">Inactive &gt;7 days (of 10)</div>
+      </div>
+      <div class="card" style="--accent:#06b6d4">
+        <div class="card-icon">💬</div>
+        <div class="card-label">Conversations</div>
+        <div class="card-value" id="c-convos">—</div>
+        <div class="card-sub">Total chat histories</div>
+      </div>
+    </div>
+
+    <!-- ── Notification + Retention ───────────────────────────── -->
+    <div class="two-col mb-28">
+
+      <!-- Notification Funnel -->
+      <div class="panel">
+        <div class="panel-title"><span>🔔</span> Notification Funnel</div>
+        <div class="funnel" id="notif-funnel">
+          <div class="funnel-row">
+            <div class="funnel-label">Fresh (0 sent)</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar" id="fn0" style="width:0%;background:#22c55e">0</div></div>
+            <div class="funnel-count" id="fn0-c">—</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">1 sent (+3h)</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar" id="fn1" style="width:0%;background:#3b82f6">0</div></div>
+            <div class="funnel-count" id="fn1-c">—</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">2 sent (+12h)</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar" id="fn2" style="width:0%;background:#f97316">0</div></div>
+            <div class="funnel-count" id="fn2-c">—</div>
+          </div>
+          <div class="funnel-row">
+            <div class="funnel-label">All 3 sent</div>
+            <div class="funnel-bar-wrap"><div class="funnel-bar" id="fn3" style="width:0%;background:#ef4444">0</div></div>
+            <div class="funnel-count" id="fn3-c">—</div>
+          </div>
+        </div>
+        <div style="margin-top:20px">
+          <div class="stat-row">
+            <div class="stat-label">Push coverage</div>
+            <div class="stat-value" id="s-push-pct">—</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">In active cycle</div>
+            <div class="stat-value" id="s-in-cycle">—</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">Cycle complete (silent)</div>
+            <div class="stat-value" id="s-cycle-done">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Retention Ring Chart -->
+      <div class="panel">
+        <div class="panel-title"><span>📊</span> Retention Breakdown</div>
+        <div class="chart-wrap">
+          <canvas id="retention-chart"></canvas>
+        </div>
+        <div style="margin-top:16px">
+          <div class="stat-row">
+            <div class="stat-label" style="display:flex;align-items:center;gap:8px">
+              <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block"></span>Active today
+            </div>
+            <div class="stat-value" id="r-1d">—</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label" style="display:flex;align-items:center;gap:8px">
+              <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;display:inline-block"></span>Active 7 days
+            </div>
+            <div class="stat-value" id="r-7d">—</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label" style="display:flex;align-items:center;gap:8px">
+              <span style="width:10px;height:10px;border-radius:50%;background:#a855f7;display:inline-block"></span>Active 30 days
+            </div>
+            <div class="stat-value" id="r-30d">—</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label" style="display:flex;align-items:center;gap:8px">
+              <span style="width:10px;height:10px;border-radius:50%;background:#374151;display:inline-block"></span>Inactive 30d+
+            </div>
+            <div class="stat-value" id="r-churned">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Character Popularity ────────────────────────────────── -->
+    <div class="two-col mb-28">
+      <div class="panel">
+        <div class="panel-title"><span>💖</span> Character Popularity</div>
+        <div class="char-list" id="char-list">
+          <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+        </div>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="panel">
+        <div class="panel-title"><span>📈</span> Key Ratios</div>
+        <div class="stat-row">
+          <div class="stat-label">DAU / MAU ratio</div>
+          <div class="stat-value" id="s-dau-mau">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Chat engagement (DAU)</div>
+          <div class="stat-value" id="s-chat-eng">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Push coverage</div>
+          <div class="stat-value" id="s-push2">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">7-day retention</div>
+          <div class="stat-value" id="s-7d-ret">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">30-day retention</div>
+          <div class="stat-value" id="s-30d-ret">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">In notification cycle</div>
+          <div class="stat-value" id="s-cycle-pct">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Avg convos / user</div>
+          <div class="stat-value" id="s-convo-avg">—</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">About to be deleted</div>
+          <div class="stat-value" id="s-expiring-pct" style="color:#ef4444">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Recent Users ────────────────────────────────────────── -->
+    <div class="section-title">Recent Activity — Last 15 Users</div>
+    <div class="panel mb-28">
+      <table class="user-table" id="recent-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Character</th>
+            <th>Last Seen</th>
+            <th>Last Chat</th>
+            <th>Notif Stage</th>
+            <th>Push</th>
+            <th>Expires</th>
+          </tr>
+        </thead>
+        <tbody id="recent-body">
+          <tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /dashboard -->
+
+<script type="module">
+  import { initializeApp }       from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+  import {
+    getFirestore, collection, query, where, orderBy, limit,
+    getCountFromServer, getDocs, Timestamp,
+  } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+
+  const FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyBLGZUomLXwreG3qieTMSTgGwUONvhzP7E',
+    authDomain:        'savita-ai-app.firebaseapp.com',
+    projectId:         'savita-ai-app',
+    storageBucket:     'savita-ai-app.firebasestorage.app',
+    messagingSenderId: '721544926262',
+    appId:             '1:721544926262:web:dashboard',
+  };
+  const ADMIN_EMAIL = 'raghavsharma8284@gmail.com';
+
+  const CHARACTERS = [
+    { id: 'chloe',   name: 'Chloe'   },
+    { id: 'maya',    name: 'Maya'    },
+    { id: 'mia',     name: 'Mia'     },
+    { id: 'harper',  name: 'Harper'  },
+    { id: 'aisha',   name: 'Aisha'   },
+    { id: 'hana',    name: 'Hana'    },
+    { id: 'jasmine', name: 'Jasmine' },
+    { id: 'rin',     name: 'Rin'     },
+  ];
+
+  const app  = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  let retentionChart = null;
+
+  // ── Auth ───────────────────────────────────────────────────────
+  document.getElementById('google-signin-btn').onclick = async () => {
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch (e) { console.error(e); }
+  };
+
+  document.getElementById('signout-btn').onclick = () => signOut(auth);
+  document.getElementById('refresh-btn').onclick = () => loadAll();
+
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('unauth-msg').style.display = 'none';
+      return;
+    }
+    if (user.email !== ADMIN_EMAIL) {
+      document.getElementById('unauth-msg').style.display = 'block';
+      signOut(auth);
+      return;
+    }
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadAll();
+  });
+
+  // ── Helpers ────────────────────────────────────────────────────
+  function daysAgo(n) {
+    const d = new Date(); d.setDate(d.getDate() - n); d.setHours(0,0,0,0);
+    return Timestamp.fromDate(d);
+  }
+  function todayMidnight() {
+    const d = new Date(); d.setHours(0,0,0,0); return Timestamp.fromDate(d);
+  }
+  function daysFromNow(n) {
+    const d = new Date(); d.setDate(d.getDate() + n);
+    return Timestamp.fromDate(d);
+  }
+  function fmt(n) { return n?.toLocaleString() ?? '—'; }
+  function pct(a, b) { return b ? Math.round((a / b) * 100) + '%' : '—'; }
+  function timeAgo(ts) {
+    if (!ts) return '—';
+    const sec = Math.floor((Date.now() - ts.toDate()) / 1000);
+    if (sec < 60)   return 'Just now';
+    if (sec < 3600) return Math.floor(sec/60) + 'm ago';
+    if (sec < 86400) return Math.floor(sec/3600) + 'h ago';
+    return Math.floor(sec/86400) + 'd ago';
+  }
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+  async function count(q) {
+    const snap = await getCountFromServer(q);
+    return snap.data().count;
+  }
+
+  // ── Load all data ──────────────────────────────────────────────
+  async function loadAll() {
+    set('last-updated', 'Refreshing...');
+    try {
+      const usersRef  = collection(db, 'users');
+      const convoRef  = collection(db, 'conversations');
+
+      // ── Counts in parallel ─────────────────────────────────────
+      const [
+        total, dau, wau, mau, chattedToday,
+        pushEnabled,
+        fn0, fn1, fn2, fn3,
+        expiring, totalConvos,
+      ] = await Promise.all([
+        count(usersRef),
+        count(query(usersRef, where('lastAppOpenAt', '>=', todayMidnight()))),
+        count(query(usersRef, where('lastAppOpenAt', '>=', daysAgo(7)))),
+        count(query(usersRef, where('lastAppOpenAt', '>=', daysAgo(30)))),
+        count(query(usersRef, where('lastChatAt',    '>=', todayMidnight()))),
+        count(query(usersRef, where('pushToken',     '>=', ''))),
+        count(query(usersRef, where('notifyCount',   '==', 0))),
+        count(query(usersRef, where('notifyCount',   '==', 1))),
+        count(query(usersRef, where('notifyCount',   '==', 2))),
+        count(query(usersRef, where('notifyCount',   '==', 3))),
+        count(query(usersRef, where('expireAt', '<=', daysFromNow(3)))),
+        count(convoRef),
+      ]);
+
+      // Character popularity in parallel
+      const charCounts = await Promise.all(
+        CHARACTERS.map(c =>
+          count(query(usersRef, where('lastCharacterId', '==', c.id)))
+            .then(n => ({ ...c, count: n }))
+        )
+      );
+
+      // Recent 15 users
+      const recentSnap = await getDocs(
+        query(usersRef, orderBy('lastAppOpenAt', 'desc'), limit(15))
+      );
+
+      // ── Render KPI Cards ───────────────────────────────────────
+      set('c-total',      fmt(total));
+      set('c-dau',        fmt(dau));
+      set('c-wau',        fmt(wau));
+      set('c-mau',        fmt(mau));
+      set('c-chat-today', fmt(chattedToday));
+      set('c-push',       fmt(pushEnabled));
+      set('c-push-pct',   pct(pushEnabled, total) + ' of total users');
+      set('c-expiring',   fmt(expiring));
+      set('c-convos',     fmt(totalConvos));
+
+      // ── Notification Funnel ────────────────────────────────────
+      const maxFn = Math.max(fn0, fn1, fn2, fn3, 1);
+      const fns   = [fn0, fn1, fn2, fn3];
+      ['fn0','fn1','fn2','fn3'].forEach((id, i) => {
+        const bar = document.getElementById(id);
+        const w   = Math.max(8, Math.round((fns[i] / maxFn) * 100));
+        if (bar) { bar.style.width = w + '%'; bar.textContent = fns[i]; }
+        set(id + '-c', fmt(fns[i]));
+      });
+
+      const inCycle = fn1 + fn2;
+      set('s-push-pct',  pct(pushEnabled, total));
+      set('s-in-cycle',  fmt(inCycle) + ' users');
+      set('s-cycle-done', fmt(fn3) + ' users');
+
+      // ── Retention Chart ────────────────────────────────────────
+      const active1d   = dau;
+      const active7d   = wau - dau;
+      const active30d  = mau - wau;
+      const inactive   = total - mau;
+
+      set('r-1d',      fmt(active1d));
+      set('r-7d',      fmt(active7d));
+      set('r-30d',     fmt(active30d));
+      set('r-churned', fmt(inactive));
+
+      const chartData = {
+        labels: ['Today', '2–7 days', '8–30 days', '30d+ inactive'],
+        datasets: [{
+          data: [active1d, active7d, active30d, inactive],
+          backgroundColor: ['#22c55e','#3b82f6','#a855f7','#374151'],
+          borderWidth: 0,
+          hoverOffset: 6,
+        }],
+      };
+      if (retentionChart) {
+        retentionChart.data = chartData;
+        retentionChart.update();
+      } else {
+        const ctx = document.getElementById('retention-chart').getContext('2d');
+        retentionChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: chartData,
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (i) => ` ${i.label}: ${fmt(i.raw)} (${pct(i.raw, total)})`,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // ── Key Ratios ─────────────────────────────────────────────
+      set('s-dau-mau',     mau ? (dau / mau * 100).toFixed(1) + '%' : '—');
+      set('s-chat-eng',    dau ? (chattedToday / dau * 100).toFixed(1) + '%' : '—');
+      set('s-push2',       pct(pushEnabled, total));
+      set('s-7d-ret',      pct(wau, total));
+      set('s-30d-ret',     pct(mau, total));
+      set('s-cycle-pct',   pct(inCycle, pushEnabled || 1));
+      set('s-convo-avg',   total ? (totalConvos / total).toFixed(2) : '—');
+      set('s-expiring-pct', fmt(expiring) + ' users');
+
+      // ── Character Popularity ───────────────────────────────────
+      const sorted   = charCounts.filter(c => c.count > 0).sort((a,b) => b.count - a.count);
+      const maxChar  = sorted[0]?.count || 1;
+      const charList = document.getElementById('char-list');
+      if (sorted.length === 0) {
+        charList.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">No data yet</div>';
+      } else {
+        charList.innerHTML = sorted.map(c => {
+          const w = Math.max(8, Math.round((c.count / maxChar) * 100));
+          return `
+            <div class="char-row">
+              <div class="char-name">${c.name}</div>
+              <div class="char-bar-wrap">
+                <div class="char-bar" style="width:${w}%">${c.count}</div>
+              </div>
+              <div class="char-count">${c.count}</div>
+            </div>`;
+        }).join('');
+      }
+
+      // ── Recent Users Table ─────────────────────────────────────
+      const tbody = document.getElementById('recent-body');
+      if (recentSnap.empty) {
+        tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No users yet</td></tr>';
+      } else {
+        tbody.innerHTML = recentSnap.docs.map(doc => {
+          const u = doc.data();
+          const name     = u.userName || 'Unknown';
+          const charName = u.lastCharacterName || '—';
+          const lastSeen = timeAgo(u.lastAppOpenAt);
+          const lastChat = timeAgo(u.lastChatAt);
+          const hasPush  = !!u.pushToken;
+          const nc       = u.notifyCount ?? 0;
+          const expires  = u.expireAt ? timeAgo(u.expireAt) + ' left' : '—';
+          const notifBadge = nc === 0
+            ? `<span class="badge badge-green">Fresh</span>`
+            : nc === 1
+            ? `<span class="badge badge-purple">1 sent</span>`
+            : nc === 2
+            ? `<span class="badge badge-orange">2 sent</span>`
+            : `<span class="badge badge-muted">Silent</span>`;
+          const pushBadge = hasPush
+            ? `<span class="badge badge-green">✓</span>`
+            : `<span class="badge badge-red">✗</span>`;
+          const expBadge = u.expireAt && u.expireAt.toDate() < new Date(Date.now() + 3*86400000)
+            ? `<span class="badge badge-red">${expires}</span>`
+            : `<span style="color:var(--muted);font-size:12px">${expires}</span>`;
+          return `
+            <tr>
+              <td style="font-weight:600">${name}</td>
+              <td style="text-transform:capitalize">${charName}</td>
+              <td style="color:var(--muted)">${lastSeen}</td>
+              <td style="color:var(--muted)">${lastChat}</td>
+              <td>${notifBadge}</td>
+              <td>${pushBadge}</td>
+              <td>${expBadge}</td>
+            </tr>`;
+        }).join('');
+      }
+
+      set('last-updated', 'Updated ' + new Date().toLocaleTimeString());
+
+    } catch (err) {
+      console.error('[Dashboard]', err);
+      set('last-updated', 'Error — check console');
+    }
+  }
+
+  // Auto-refresh every 60 seconds
+  setInterval(loadAll, 60_000);
+</script>
+</body>
+</html>
