@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
-import { Star, Settings } from 'lucide-react-native';
+import { useRef, useState } from 'react';
+import { Star, Settings, Trash2 } from 'lucide-react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import useAppStore from '../../store/useAppStore';
 import { COLORS, SPACING, RADIUS } from '../../constants/theme';
 import { showPaywallAlways, checkPremiumStatus } from '../../lib/revenuecat';
@@ -13,12 +14,15 @@ export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const user             = useAppStore((s) => s.user);
+  const user              = useAppStore((s) => s.user);
   const selectedCharacter = useAppStore((s) => s.selectedCharacter);
   const customName        = useAppStore((s) => s.customName);
   const resetCharacterFlow = useAppStore((s) => s.resetCharacterFlow);
   const setIsPremium       = useAppStore((s) => s.setIsPremium);
   const [paywallLoading, setPaywallLoading] = useState(false);
+
+  // Ref to close open swipeable when another action fires
+  const swipeableRef = useRef(null);
 
   const handleProBadge = async () => {
     if (paywallLoading) return;
@@ -34,6 +38,18 @@ export default function DashboardScreen() {
     } finally {
       setPaywallLoading(false);
     }
+  };
+
+  const confirmDelete = (name) => {
+    swipeableRef.current?.close();
+    Alert.alert(
+      'Remove Companion',
+      `Remove ${name} from your list?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Remove', style: 'destructive', onPress: resetCharacterFlow },
+      ]
+    );
   };
 
   const userName    = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
@@ -53,18 +69,38 @@ export default function DashboardScreen() {
     router.replace('/(character)/carousel');
   };
 
-  const renderCompanion = ({ item }) => (
+  const renderLeftActions = (item) => (
     <TouchableOpacity
-      style={styles.row}
-      onPress={() => router.push(`/(main)/chat/${item.id}`)}
-      activeOpacity={0.72}
+      style={styles.deleteAction}
+      onPress={() => confirmDelete(item.name)}
+      activeOpacity={0.8}
     >
-      <Image source={item.image} style={styles.avatar} />
-      <View style={styles.rowInfo}>
-        <Text style={styles.companionName}>{item.name}</Text>
-        <Text style={styles.lastMessage} numberOfLines={2}>{item.lastMessage}</Text>
-      </View>
+      <Trash2 color="#fff" size={22} strokeWidth={2} />
+      <Text style={styles.deleteActionText}>Remove</Text>
     </TouchableOpacity>
+  );
+
+  const renderCompanion = ({ item }) => (
+    <Swipeable
+      ref={swipeableRef}
+      renderLeftActions={() => renderLeftActions(item)}
+      overshootLeft={false}
+      friction={2}
+    >
+      <TouchableOpacity
+        style={styles.row}
+        onPress={() => router.push(`/(main)/chat/${item.id}`)}
+        onLongPress={() => confirmDelete(item.name)}
+        delayLongPress={500}
+        activeOpacity={0.72}
+      >
+        <Image source={item.image} style={styles.avatar} />
+        <View style={styles.rowInfo}>
+          <Text style={styles.companionName}>{item.name}</Text>
+          <Text style={styles.lastMessage} numberOfLines={2}>{item.lastMessage}</Text>
+        </View>
+      </TouchableOpacity>
+    </Swipeable>
   );
 
   return (
@@ -138,11 +174,20 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md, gap: SPACING.md,
+    backgroundColor: '#000000',
   },
   avatar: { width: 60, height: 60, borderRadius: 30, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)' },
   rowInfo: { flex: 1 },
   companionName: { fontSize: 18, fontWeight: '700', color: '#ffffff', marginBottom: 4 },
   lastMessage: { fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 18 },
+  deleteAction: {
+    backgroundColor: '#e53935',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 90,
+    gap: 4,
+  },
+  deleteActionText: { fontSize: 12, fontWeight: '700', color: '#ffffff', letterSpacing: 0.3 },
   empty: { alignItems: 'center', paddingTop: 80, gap: SPACING.sm },
   emptyText: { fontSize: 16, fontWeight: '600', color: 'rgba(255,255,255,0.25)' },
   emptySub: { fontSize: 13, color: 'rgba(255,255,255,0.15)' },

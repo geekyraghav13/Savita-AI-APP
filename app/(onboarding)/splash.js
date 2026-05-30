@@ -8,7 +8,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, {
   Defs, LinearGradient as SvgGrad, Stop, Text as SvgText,
 } from 'react-native-svg';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Heart, Mic, Lightbulb, Shield, AudioLines } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -50,16 +49,11 @@ export default function SplashScreen() {
       ])
     ).start();
 
-    const nav = async () => {
-      await new Promise((r) => setTimeout(r, 3500));
-      proceed();
-    };
-    nav();
+    const t = setTimeout(proceed, 3500);
+    return () => clearTimeout(t);
   }, []);
 
-  const proceed = async () => {
-    // DEV: clear flag so slider always shows while building onboarding screens
-    await AsyncStorage.removeItem('onboarded');
+  const proceed = () => {
     router.replace('/(onboarding)/slider');
   };
 
