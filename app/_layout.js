@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAuthListener } from '../lib/auth';
 import { initRevenueCat, checkPremiumStatus } from '../lib/revenuecat';
+import { registerPushToken } from '../lib/notifications';
+import { refreshUserSession } from '../lib/firestore';
 import useAppStore from '../store/useAppStore';
 
 function AppGate() {
@@ -18,10 +20,14 @@ function AppGate() {
     checkPremiumStatus().then(setIsPremium);
   }, []);
 
-  // Re-check premium whenever auth user changes (login/logout)
+  // Re-check premium + register FCM token + refresh TTL whenever auth user changes
   useEffect(() => {
     if (user?.uid) {
       checkPremiumStatus().then(setIsPremium);
+      refreshUserSession(user.uid);
+      // Small delay so the auth state fully settles before requesting permission
+      const t = setTimeout(() => registerPushToken(user.uid), 2000);
+      return () => clearTimeout(t);
     }
   }, [user?.uid]);
 

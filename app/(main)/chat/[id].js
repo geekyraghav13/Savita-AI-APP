@@ -13,9 +13,18 @@ import useAppStore from '../../../store/useAppStore';
 import { CHARACTERS } from '../../../constants/characters';
 import { COLORS, SPACING, RADIUS } from '../../../constants/theme';
 import { showPaywall, checkPremiumStatus } from '../../../lib/revenuecat';
+import {
+  saveMessage,
+  touchConversation,
+  loadMessages,
+  onUserMessageSent,
+  saveLastMessages,
+} from '../../../lib/firestore';
+import { generateRetentionNotifications } from '../../../lib/gemini';
 
-const FREE_MSG_LIMIT = 5;
+const FREE_MSG_LIMIT   = 5;
 const LIFETIME_MSGS_KEY = '@savita/lifetime_msgs';
+const MAX_WINDOW       = 7; // rolling user-message window for Gemini context
 
 // ── Per-session call deduplication ───────────────────────────────────────────
 const callShownForIds = new Set();
@@ -154,48 +163,87 @@ export default function ChatScreen() {
   const [showCallModal,  setShowCallModal]  = useState(false);
   const [lifetimeMsgs,   setLifetimeMsgs]  = useState(0);
   const [paywallLoading, setPaywallLoading] = useState(false);
+  const [historyLoaded,  setHistoryLoaded] = useState(false);
 
-  const flatListRef  = useRef(null);
-  const callTimerRef = useRef(null);
+  const flatListRef    = useRef(null);
+  const callTimerRef   = useRef(null);
+  // Rolling window of last MAX_WINDOW user messages (for Gemini context)
+  const lastMsgsWindow = useRef([]);
 
   const isLocked = !isPremium && lifetimeMsgs >= FREE_MSG_LIMIT;
 
-  // ── Load lifetime message count from storage ──────────────────────────────
+  // ── Load lifetime message count ───────────────────────────────────────────
   useEffect(() => {
     AsyncStorage.getItem(LIFETIME_MSGS_KEY).then((val) => {
       setLifetimeMsgs(val ? parseInt(val, 10) : 0);
     });
   }, []);
 
-  // ── Init: opening message + 7-second call timer ───────────────────────────
+  // ── Load conversation history from Firestore ─────────────────────────────
   useEffect(() => {
-    setMessages([{
-      id: 'open', role: 'companion',
-      text: t('chat.openingMessage', { name: userName }),
-    }]);
+    if (!user?.uid || historyLoaded) return;
+    loadMessages(user.uid, id).then((history) => {
+      if (history.length > 0) {
+        // Map Firestore format → local message format
+        const mapped = history.map((m) => ({
+          id:   m.id,
+          role: m.role === 'user' ? 'user' : 'companion',
+          text: m.text,
+        }));
+        setMessages(mapped);
+        setShowExamples(false);
+        // Rebuild the window from history (user messages only)
+        const userMsgs = history
+          .filter((m) => m.role === 'user')
+          .map((m) => m.text)
+          .slice(-MAX_WINDOW);
+        lastMsgsWindow.current = userMsgs;
+      } else {
+        // First time — show opening message
+        setMessages([{
+          id: 'open', role: 'companion',
+          text: t('chat.openingMessage', { name: userName }),
+        }]);
+      }
+      setHistoryLoaded(true);
+    });
+  }, [user?.uid, id]);
 
+  // ── Call timer (7s after first open) ─────────────────────────────────────
+  useEffect(() => {
     if (!callShownForIds.has(id)) {
       callTimerRef.current = setTimeout(() => {
         callShownForIds.add(id);
         setShowCallModal(true);
       }, 7000);
     }
-
     return () => clearTimeout(callTimerRef.current);
   }, [id]);
 
-  // ── Android hardware back → dashboard ─────────────────────────────────────
+  // ── On session end: generate Gemini notifications (fire-and-forget) ───────
+  const triggerGeminiOnExit = useCallback(() => {
+    if (!user?.uid || !lastMsgsWindow.current.length) return;
+    generateRetentionNotifications(
+      user.uid,
+      character?.name ?? displayName,
+      lastMsgsWindow.current,
+      userName,
+    );
+  }, [user?.uid, character, displayName, userName]);
+
+  // ── Android hardware back ─────────────────────────────────────────────────
   useFocusEffect(
     useCallback(() => {
       const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        triggerGeminiOnExit();
         router.replace('/(main)/dashboard');
         return true;
       });
       return () => sub.remove();
-    }, [router])
+    }, [router, triggerGeminiOnExit])
   );
 
-  // ── Show RevenueCat paywall, then re-check premium ────────────────────────
+  // ── Show RevenueCat paywall ───────────────────────────────────────────────
   const triggerPaywall = useCallback(async () => {
     if (paywallLoading) return;
     setPaywallLoading(true);
@@ -204,7 +252,6 @@ export default function ChatScreen() {
       if (purchased) {
         setIsPremium(true);
       } else {
-        // Re-check in case they restored on another device
         const stillPremium = await checkPremiumStatus();
         setIsPremium(stillPremium);
       }
@@ -219,7 +266,6 @@ export default function ChatScreen() {
       const trimmed = (text ?? inputText).trim();
       if (!trimmed) return;
 
-      // Free limit check
       if (!isPremium && lifetimeMsgs >= FREE_MSG_LIMIT) {
         triggerPaywall();
         return;
@@ -228,37 +274,49 @@ export default function ChatScreen() {
       const userMsg = { id: `u${Date.now()}`, role: 'user', text: trimmed };
       setMessages((prev) => [...prev, userMsg]);
       if (text === undefined) setInputText('');
+      setShowExamples(false);
       incrementMessageCount();
 
-      // Increment lifetime count for free users
+      // Free limit tracking
       if (!isPremium) {
         const newCount = lifetimeMsgs + 1;
         setLifetimeMsgs(newCount);
         AsyncStorage.setItem(LIFETIME_MSGS_KEY, String(newCount));
       }
 
+      // ── Firestore: save user message ─────────────────────────────────────
+      if (user?.uid) {
+        saveMessage(user.uid, id, 'user', trimmed);
+        touchConversation(user.uid, id);
+
+        // Update rolling 7-message window
+        const newWindow = [...lastMsgsWindow.current, trimmed].slice(-MAX_WINDOW);
+        lastMsgsWindow.current = newWindow;
+
+        // Update Firestore user doc: reset notification cycle + save window
+        onUserMessageSent(user.uid, trimmed, id, character?.name ?? displayName, userName);
+        saveLastMessages(user.uid, newWindow);
+      }
+
+      // ── AI reply ─────────────────────────────────────────────────────────
       setIsTyping(true);
       const delay = 900 + Math.floor(Math.random() * 600);
       setTimeout(() => {
         const reply = AI_RESPONSES[aiIndex++ % AI_RESPONSES.length];
-        setMessages((prev) => [...prev, { id: `c${Date.now()}`, role: 'companion', text: reply }]);
+        const aiMsg = { id: `c${Date.now()}`, role: 'companion', text: reply };
+        setMessages((prev) => [...prev, aiMsg]);
         setIsTyping(false);
+
+        // Save AI reply to Firestore too
+        if (user?.uid) saveMessage(user.uid, id, 'companion', reply);
       }, delay);
     },
-    [inputText, incrementMessageCount, isPremium, lifetimeMsgs, triggerPaywall]
+    [inputText, incrementMessageCount, isPremium, lifetimeMsgs, triggerPaywall, user, id, character, displayName, userName]
   );
 
-  // ── Call outcomes → RevenueCat paywall ───────────────────────────────────
-  const handleAccept = useCallback(() => {
-    setShowCallModal(false);
-    // Short delay so modal closes before paywall appears
-    setTimeout(() => triggerPaywall(), 300);
-  }, [triggerPaywall]);
-
-  const handleDecline = useCallback(() => {
-    setShowCallModal(false);
-    setTimeout(() => triggerPaywall(), 300);
-  }, [triggerPaywall]);
+  // ── Call outcomes ─────────────────────────────────────────────────────────
+  const handleAccept  = useCallback(() => { setShowCallModal(false); setTimeout(() => triggerPaywall(), 300); }, [triggerPaywall]);
+  const handleDecline = useCallback(() => { setShowCallModal(false); setTimeout(() => triggerPaywall(), 300); }, [triggerPaywall]);
 
   // ── Message renderer ──────────────────────────────────────────────────────
   const renderMessage = useCallback(({ item }) => {
@@ -282,7 +340,7 @@ export default function ChatScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.headerBack}
-          onPress={() => router.replace('/(main)/dashboard')}
+          onPress={() => { triggerGeminiOnExit(); router.replace('/(main)/dashboard'); }}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -301,7 +359,6 @@ export default function ChatScreen() {
         </View>
 
         <View style={styles.headerRight}>
-          {/* Free message counter badge (only for non-premium) */}
           {!isPremium && (
             <View style={[styles.coinBadge, isLocked && styles.coinBadgeLocked]}>
               <Text style={styles.coinStar}>{isLocked ? '🔒' : '✦'}</Text>
@@ -347,7 +404,6 @@ export default function ChatScreen() {
           }
         />
 
-        {/* Example messages tray */}
         {showExamples && !isLocked && (
           <View style={styles.examplesTray}>
             <View style={styles.examplesHeader}>
@@ -380,7 +436,6 @@ export default function ChatScreen() {
           </View>
         )}
 
-        {/* Locked upgrade banner */}
         {isLocked && (
           <TouchableOpacity
             style={styles.lockedBanner}
@@ -396,7 +451,6 @@ export default function ChatScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Input bar */}
         <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, 6) + SPACING.sm }]}>
           <TextInput
             style={[styles.input, isLocked && styles.inputLocked]}
@@ -515,7 +569,6 @@ const styles = StyleSheet.create({
   },
   exampleChipText: { fontSize: 13, color: COLORS.textSecondary, fontWeight: '500' },
 
-  // Locked banner
   lockedBanner: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: 'rgba(212,175,55,0.08)',

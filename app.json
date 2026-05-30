@@ -34,7 +34,15 @@
     },
     "plugins": [
       "expo-router",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/savita-logo.png",
+          "color": "#7c3aed",
+          "sounds": []
+        }
+      ]
     ]
   }
 }
