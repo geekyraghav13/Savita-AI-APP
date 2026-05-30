@@ -1,18 +1,23 @@
 const { onSchedule }       = require('firebase-functions/v2/scheduler');
 const { onCall }           = require('firebase-functions/v2/https');
 const { setGlobalOptions } = require('firebase-functions/v2');
-const { defineSecret }     = require('firebase-functions/params');
 const admin                = require('firebase-admin');
 const { getFallbackNotification } = require('./templates');
 
 admin.initializeApp();
 const db = admin.firestore();
 
-// Run all functions in asia-south1 (Mumbai) — closest to India
-setGlobalOptions({ region: 'asia-south1' });
+// us-central1 is the default Firebase region — most pre-configured, fewest setup issues
+setGlobalOptions({ region: 'us-central1' });
 
-// Gemini API key — stored in Firebase Secret Manager, never in code or APK
-const GEMINI_SECRET = defineSecret('GEMINI_API_KEY');
+// Gemini API key — loaded from environment variable at runtime (set in .env locally,
+// and via Google Cloud Console → Cloud Run → Environment Variables in production).
+// Never in app code or APK.
+function getGeminiKey() {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY environment variable is not set');
+  return key;
+}
 
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -67,7 +72,7 @@ Return ONLY valid JSON, no markdown:
 // Called by the app when the user leaves a chat session. Requires Firebase Auth.
 // The Gemini key never leaves the backend — it's read from Secret Manager here.
 exports.generateNotifications = onCall(
-  { secrets: [GEMINI_SECRET], region: 'asia-south1' },
+  {},
   async (request) => {
     // Enforce authentication — reject unauthenticated calls
     if (!request.auth) {
@@ -86,8 +91,7 @@ exports.generateNotifications = onCall(
     let notifications;
 
     try {
-      const apiKey = GEMINI_SECRET.value();
-      notifications = await callGemini(apiKey, characterName, lastMessages, userName);
+      notifications = await callGemini(getGeminiKey(), characterName, lastMessages, userName);
     } catch (err) {
       console.warn('[generateNotifications] Gemini failed, using templates:', err.message);
       // Build fallback notifications for all 3 positions

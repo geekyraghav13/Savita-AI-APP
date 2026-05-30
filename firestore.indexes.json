@@ -13,11 +13,13 @@
     {
       "collectionGroup": "users",
       "fieldPath": "expireAt",
+      "indexes": [],
       "ttlConfig": {}
     },
     {
       "collectionGroup": "conversations",
       "fieldPath": "expireAt",
+      "indexes": [],
       "ttlConfig": {}
     }
   ]
